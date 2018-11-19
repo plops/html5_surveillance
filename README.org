@@ -8,3 +8,14 @@
 - https://www.youtube.com/watch?v=_ZQOUQsw_YI live coding webgl
 - https://www.youtube.com/watch?v=Ah7z3E56YPQ using the camera
 - https://github.com/GoogleChromeLabs/snapshot/tree/master/src
+- image capture using canvas https://youtu.be/Ah7z3E56YPQ?t=554
+- https://github.com/GoogleChromeLabs/snapshot/blob/10dd00fed8ddbe67d379eca846c2ecfca3142b0d/src/camera-helper.ts
+```
+const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d')!;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0);
+
+return await canvasToBlob(canvas, constants.IMAGE_TYPE);
+```
