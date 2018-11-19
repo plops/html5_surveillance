@@ -1,0 +1,10 @@
+# References
+
+- https://whatwebcando.today/camera-microphone.html
+- https://www.html5rocks.com/en/tutorials/getusermedia/intro/
+- https://github.com/cljsjs/packages/tree/master/media-stream-recorder
+- https://www.adobe.com/devnet/archive/html5/articles/javascript-motion-detection.html
+
+- https://www.youtube.com/watch?v=_ZQOUQsw_YI live coding webgl
+- https://www.youtube.com/watch?v=Ah7z3E56YPQ using the camera
+- https://github.com/GoogleChromeLabs/snapshot/tree/master/src
