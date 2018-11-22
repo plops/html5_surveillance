@@ -19,3 +19,10 @@ const canvas = document.createElement('canvas');
 
 return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 ```
+- contrast shader https://www.shadertoy.com/view/Xdf3RN
+- progressive web app face detector https://youtu.be/m-sCdS0sQO8?t=1699
+- https://openframeworks.cc/documentation/ofxEmscripten/ access camera with emscripten
+- https://libcinder.org/about
+- https://d2jta7o2zej4pf.cloudfront.net/
+- https://github.com/shamadee/web-dsp
+- https://www.html5rocks.com/en/tutorials/getusermedia/intro/
