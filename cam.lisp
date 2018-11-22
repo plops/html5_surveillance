@@ -16,6 +16,21 @@
 			(then got-stream)
 			(catch handle-error)))
 
+
+(ps (getprop navigator 'media-devices)) ;; "navigator.mediaDevices;"
+
+(ps (getprop navigator 'media-devices 'get-user-media)) ;; "navigator.mediaDevices.getUserMedia;"
+
+
+(defpsmacro dot (obj &rest props)
+  "Handy getprop/aref composition macro."
+  (if props
+      `(@ (getprop ,obj ,(if (symbolp (car props))
+                             `',(car props)
+                             (car props)))
+          ,@(cdr props))
+      obj))
+
 (define-easy-handler (code :uri "/code.js") ()
   (setf (content-type*) "text/javascript")
   (ps

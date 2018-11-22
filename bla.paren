@@ -11,6 +11,8 @@
 
 ;; (global-set-key (kbd "<f3>") 'trident-eval-defun)
 
+;; load common lisp, slime, parenscript, have parenscript in package
+
 ;; run-skewer
 ;; evaluate with F3
 (+ 1 2)

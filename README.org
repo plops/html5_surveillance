@@ -3,17 +3,23 @@
 ## Trident mode
 - in conjunction with skewer-mode can execute parenscript
   in the browser. it does not support completion. it is on melpa
-- looks like macros are not expanded
+- if we don't use the parenscript package, macros are not expanded:
 ```
 (@ (@
 	((@ navigator media-devices get-user-media) constraints)
 	(then got-stream))
        (catch handle-error))
 ```
-
+- expands to this:
 ```
 return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStream)), catch(handleError));
 ```
+- using parenscript package gives:
+
+```
+    return navigator.mediaDevices.getUserMedia(constraints)[then(gotStream)][catch(handleError)];
+```
+
 
 ## slime-proxy
 - seems to do completion but needs parenscript patches and is not on
