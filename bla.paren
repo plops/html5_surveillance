@@ -1,0 +1,16 @@
+;; trident-mode skewer-mode
+;; in .emacs:
+;; (add-to-list 'auto-mode-alist (cons "\\.paren\\'" 'lisp-mode))
+;; (add-hook 'lisp-mode-hook
+;;           #'(lambda ()
+;;               (when (and buffer-file-name
+;;                          (string-match-p "\\.paren\\>" buffer-file-name))
+;;                 (unless (slime-connected-p)
+;;                   (save-excursion (slime)))
+;;                 (trident-mode +1))))
+
+;; (global-set-key (kbd "<f3>") 'trident-eval-defun)
+
+;; run-skewer
+;; evaluate with F3
+(+ 1 2)
