@@ -6,6 +6,8 @@
   (:use #:cl #:hunchentoot #:cl-who #:parenscript #:cl-fad))
 (in-package #:cl-cam)
 
+(ps-js::getprop 'a 'b 'c)
+
 (setq cl-who:*attribute-quote-char* #\")
 
 (start (make-instance 'easy-acceptor :port 8080))
@@ -21,6 +23,7 @@
 
 (ps (getprop navigator 'media-devices 'get-user-media)) ;; "navigator.mediaDevices.getUserMedia;"
 
+(ps-js:getprop 'navigator 'media-devices 'get-user-media)
 
 (defpsmacro dot (obj &rest props)
   "Handy getprop/aref composition macro."
