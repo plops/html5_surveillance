@@ -10,6 +10,12 @@
 
 (start (make-instance 'easy-acceptor :port 8080))
 
+#+nil
+(ps::compile-statement (@
+			(navigator.media-devices.get-user-media 2)
+			(then got-stream)
+			(catch handle-error)))
+
 (define-easy-handler (code :uri "/code.js") ()
   (setf (content-type*) "text/javascript")
   (ps
@@ -41,10 +47,9 @@
 			     (create exact
 				     video-select.value)))))
 	(chain
-	 (chain (navigator.media-devices.get-user-media constraints)
-		(then got-stream)
-		)
-	 (:catch handle-error))))
+	 ((@ navigator media-devices get-user-media) constraints)
+	 (then got-stream)
+	 (catch handle-error))))
     (defun got-stream (stream)
       (setf window.stream stream
 	    video-element.src-object stream))
