@@ -1,5 +1,5 @@
 ;; https://common-lisp.net/project/parenscript/tutorial.html
-
+;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
 (mapc #'ql:quickload '(:cl-fad :cl-who :hunchentoot :parenscript))
 
 (defpackage #:cl-cam
@@ -21,8 +21,16 @@
 	  (alert "cam")
 	  (alert "nocam")))
     (defun got-devices (device-infos)
-      (loop for i from 0 below (1- device-info.length) do
-	   (let ((device-info (aref device-infos i))))))
+      (loop for info in device-info do
+	   (let ((option (document.create-element "option")))
+	     (setf option.value info.deviceId)
+	     (ecase info.kind
+	       ("videoinput"
+		(setf option.text (or info.label
+				      (+ "camera"
+					 (+ 1 video-selesct))))
+		(video-select.append-child option))
+	       (t (console.log "found another kind of device"))))))
     (defun get-stream ()
       (when window.stream
 	(chain (window.stream.get-tracks)
