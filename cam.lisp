@@ -6,7 +6,7 @@
   (:use #:cl #:hunchentoot #:cl-who #:parenscript #:cl-fad))
 (in-package #:cl-cam)
 
-(setq cl-who:*attribute-quote-char*ribute-quote-char* #\")
+(setq cl-who:*attribute-quote-char* #\")
 
 (start (make-instance 'easy-acceptor :port 8080))
 
@@ -24,7 +24,7 @@
       (loop for info in device-info do
 	   (let ((option (document.create-element "option")))
 	     (setf option.value info.deviceId)
-	     (ecase info.kind
+	     (case info.kind
 	       ("videoinput"
 		(setf option.text (or info.label
 				      (+ "camera"
@@ -33,8 +33,18 @@
 	       (t (console.log "found another kind of device"))))))
     (defun get-stream ()
       (when window.stream
-	(chain (window.stream.get-tracks)
-	       (for-each (lambda (track) (track.stop))))))
+	(@ (window.stream.get-tracks)
+	   (for-each (lambda (track) (track.stop)))))
+      (let ((constraints
+	     (create video
+		     (create device-id
+			     (create exact
+				     video-select.value)))))
+	(chain
+	 (chain (navigator.media-devices.get-user-media constraints)
+		(then got-stream)
+		)
+	 (:catch handle-error))))
     (defun got-stream (stream)
       (setf window.stream stream
 	    video-element.src-object stream))
@@ -43,13 +53,13 @@
     (let ((video (document.query-selector "video"))
 	  (video-select (document.query-selector "select#videoSource"))
 	  (constraints (create video t)))
-      (chain (navigator.media-devices.get-user-media constraints)
+      (@ (navigator.media-devices.get-user-media constraints)
 	     (then (lambda (stream)
 		     (setf video.src-object stream))))
-      (chain (navigator.media-devices.enumerate-devices)
-	     (then got-devices)
-	     (then get-stream)
-	     (catch handle-error))
+      (@ (navigator.media-devices.enumerate-devices)
+	 (then got-devices)
+	 (then get-stream)
+	 (catch handle-error))
       (setf video-select.onchange get-stream))))
 
 (define-easy-handler (e :uri "/e") ()
