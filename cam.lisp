@@ -56,7 +56,6 @@
 	     (lambda (devices)
 	      (dot
 	       (navigator.mediaDevices.getUserMedia
-		:audio true
 		:video (dict (deviceId (dot (aref devices 0)
 					    deviceId))))
 	       (then handle_success)))))))))
