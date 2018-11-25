@@ -3,7 +3,8 @@
 (mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot" "cl-js-generator"))
 
 (defpackage #:cl-cam
-  (:use #:cl #:hunchentoot #:cl-who #:cl-js-generator #:cl-fad))
+  (:use #:cl ;#:hunchentoot #:cl-who #:cl-js-generator #:cl-fad
+	))
 (in-package #:cl-cam)
 
 
@@ -11,12 +12,26 @@
 (setq cl-who:*attribute-quote-char* #\")
 (setf cl-who::*html-mode* :html5)
 
-(start (make-instance 'easy-acceptor :port 8080))
+(hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 8080))
 
 (cl-js-generator::test)
 
+(cl-js-generator::beautify-source
+ `(dot
+  (navigator.mediaDevices.enumerateDevices)
+  (then (lambda (devices)
+	  (return
+	    (setf devices
+		  (devices.filter
+		   (lambda (d)
+		     (const-decl bla 3)
+		     (return (===
+			      (+ 1 (string "videoinput"))
+			      (- 3 d.kind)))))))))))
+
 (let ((script-str
-       (cl-js-generator::beautify-source
+       (;cl-js-generator::emit-js :code ;
+	cl-js-generator::beautify-source
 	`(let ((player (document.getElementById (string "player"))))
 	   (def handle_success (stream)
 	     (setf player.srcObject stream))
