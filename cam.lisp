@@ -38,10 +38,7 @@
 	     (logger (string "success!"))
 	     (setf player.srcObject stream))
 	   (logger (string "getUserMedia ..."))
-	   (dot
-	    (navigator.mediaDevices.getUserMedia :audio false
-						 :video true)
-	    (then handle_success))
+	   
 	   
 	   (dot
 	    (navigator.mediaDevices.enumerateDevices)
@@ -54,7 +51,15 @@
 					 (string "videoinput")
 					 d.kind)))))
 		     (logger devices)
-		     (return devices))))))))
+		     (return devices)))
+	    (then
+	     (lambda (devices)
+	      (dot
+	       (navigator.mediaDevices.getUserMedia
+		:audio true
+		:video (dict (deviceId (dot (aref devices 0)
+					    deviceId))))
+	       (then handle_success)))))))))
   (format t "~&~a~%" script-str)
  (hunchentoot:define-easy-handler (e :uri "/index.html") ()
    (cl-who:with-html-output-to-string (s)
