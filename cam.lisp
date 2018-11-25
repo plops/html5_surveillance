@@ -6,7 +6,7 @@
   (:use #:cl ;#:hunchentoot #:cl-who #:cl-js-generator #:cl-fad
 	))
 (in-package #:cl-cam)
-
+(setf (readtable-case *readtable*) :invert)
 
 
 (setq cl-who:*attribute-quote-char* #\")
@@ -25,7 +25,7 @@
 		  (devices.filter
 		   (lambda (d)
 		     (const-decl bla 3)
-		     (return (===
+		     (return (=
 			      (+ 1 (string "videoinput"))
 			      (- 3 d.kind)))))))))))
 
@@ -47,12 +47,12 @@
 			   (devices.filter
 			    (lambda (d)
 			      (const-decl bla 3)
-			      (return (===
-				       (+ 1 (string "videoinput"))
-				      (- 3 d.kind))))))))))))))
+			      (return (=== (- 2 1)
+				       (string "videoinput")
+				      d.kind)))))))))))))
   (format t "~&~a~%" script-str)
- (define-easy-handler (e :uri "/index.html") ()
-   (with-html-output-to-string (s)
+ (hunchentoot:define-easy-handler (e :uri "/index.html") ()
+   (cl-who:with-html-output-to-string (s)
      (:html
       (:head (:title "cam")
 	     )
