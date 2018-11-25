@@ -53,3 +53,5 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://d2jta7o2zej4pf.cloudfront.net/
 - https://github.com/shamadee/web-dsp
 - https://www.html5rocks.com/en/tutorials/getusermedia/intro/
+- https://developers.google.com/web/fundamentals/media/recording-video/
+- https://developers.google.com/web/fundamentals/media/manipulating/live-effects
