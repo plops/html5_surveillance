@@ -9,81 +9,41 @@
 
 
 (setq cl-who:*attribute-quote-char* #\")
+(setf cl-who::*html-mode* :html5)
 
 (start (make-instance 'easy-acceptor :port 8080))
 
+(cl-js-generator::test)
 
-(cl-js-generator::beautify-source
- `(do0
-   (def has_get_user_media ()
-     (and navigator.mediaDevices
-	  navigator.mediaDevices.getUserMedia))
-   (def greeting_callback ()
-     (if (has_get_user_media)
-	 (alert (string "cam"))
-	 (alert (string "nocam"))))))
+(let ((script-str
+       (cl-js-generator::beautify-source
+	`(let ((player (document.getElementById (string "player"))))
+	   (def handle_success (stream)
+	     (setf player.srcObject stream))
+	   (dot
+	    (navigator.mediaDevices.getUserMedia :audio false
+						 :video true)
+	    (then handle_success))
+	   (dot
+	    (navigator.mediaDevices.enumerateDevices)
+	    (then (lambda (devices)
+		    (return
+		     (setf devices
+			   (devices.filter
+			    (lambda (d)
+			      (const-decl bla 3)
+			      (return (===
+				       (+ 1 (string "videoinput"))
+				      (- 3 d.kind))))))))))))))
+  (format t "~&~a~%" script-str)
+ (define-easy-handler (e :uri "/index.html") ()
+   (with-html-output-to-string (s)
+     (:html
+      (:head (:title "cam")
+	     )
+      (:body (:h2 "camera")
+	     (:video :id "player" :controls t)
+	     (:script :type "text/javascript"
+		      (princ script-str s)
+		      ))))))
 
-(define-easy-handler (code :uri "/code.js") ()
-  (setf (content-type*) "text/javascript")
-  (cl-js-generator::emit-js :code
-			    `(do0
-			     (def has-get-user-media ()
-			       (and navigator.media-devices
-				    navigator.media-devices.get-user-media))
-			     (def greeting-callback ()
-			       (if (has-get-user-media)
-				   (alert "cam")
-				   (alert "nocam")))
-			     #+nil
-			     (def got-devices (device-infos)
-			       (loop for info in device-info do
-				    (let ((option (document.create-element "option")))
-				      (setf option.value info.deviceId)
-				      (case info.kind
-					("videoinput"
-					 (setf option.text (or info.label
-							       (+ "camera"
-								  (+ 1 video-selesct))))
-					 (video-select.append-child option))
-					(t (console.log "found another kind of device")))))))
-			    #+nil(do0
-			     (defun get-stream ()
-			       (when window.stream
-				 (@ (window.stream.get-tracks)
-				    (for-each (lambda (track) (track.stop)))))
-			       (let ((constraints
-				      (create video
-					      (create device-id
-						      (create exact
-							      video-select.value)))))
-				 (chain
-				  ((@ navigator media-devices get-user-media) constraints)
-				  (then got-stream)
-				  (catch handle-error))))
-			     (defun got-stream (stream)
-			       (setf window.stream stream
-				     video-element.src-object stream))
-			     (defun handle-error (error)
-			       (console.error "error: " error))
-			     (let ((video (document.query-selector "video"))
-				   (video-select (document.query-selector "select#videoSource"))
-				   (constraints (create video t)))
-			       (@ (navigator.media-devices.get-user-media constraints)
-				  (then (lambda (stream)
-					  (setf video.src-object stream))))
-			       (@ (navigator.media-devices.enumerate-devices)
-				  (then got-devices)
-				  (then get-stream)
-				  (catch handle-error))
-			       (setf video-select.onchange get-stream)))))
-
-(define-easy-handler (e :uri "/e") ()
-  (with-html-output-to-string (s)
-    (:html
-     (:head (:title "cam")
-	    (:script :type "text/javascript"
-		     :src "/code.js" ))
-     (:body (:h2 "camera")
-	    (:a :href "#" :onclick (ps (greeting-callback))
-		"hello")
-	    (:video)))))
