@@ -21,9 +21,23 @@
 (let ((script-str
        (;cl-js-generator::emit-js :code ;
 	cl-js-generator::beautify-source
-	`(let ((player (document.getElementById (string "player"))))
+	`(let ((player (document.getElementById (string "player")))
+	       (log (document.getElementById (string "log"))))
+	   (def logger (message)
+	     (if (== (string "object") (typeof message))
+		 (incf log.innerHTML
+		       (+ (? (and JSON
+				  JSON.stringify)
+			     (JSON.stringify message)
+			     message)
+			  (string "<br />")))
+		 (incf log.innerHTML
+		       (+ message
+			  (string "<br />")))))
 	   (def handle_success (stream)
+	     (logger (string "success!"))
 	     (setf player.srcObject stream))
+	   (logger (string "getUserMedia ..."))
 	   (dot
 	    (navigator.mediaDevices.getUserMedia :audio false
 						 :video true)
@@ -32,20 +46,22 @@
 	   (dot
 	    (navigator.mediaDevices.enumerateDevices)
 	    (then  (lambda (devices)
-		     (return
-		       (setf devices
+		     
+		     (setf devices
 			     (devices.filter
 			      (lambda (d)
 				(return (===
 					 (string "videoinput")
-					 d.kind)))))))))))))
+					 d.kind)))))
+		     (logger devices)
+		     (return devices))))))))
   (format t "~&~a~%" script-str)
  (hunchentoot:define-easy-handler (e :uri "/index.html") ()
    (cl-who:with-html-output-to-string (s)
      (:html
-      (:head (:title "cam")
-	     )
+      (:head (:title "cam"))
       (:body (:h2 "camera")
+	     (:div :id "log")
 	     (:video :id "player" :controls t)
 	     (:script :type "text/javascript"
 		      (princ script-str s)
