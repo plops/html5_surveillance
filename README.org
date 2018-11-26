@@ -48,6 +48,7 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 ```
 - contrast shader https://www.shadertoy.com/view/Xdf3RN
 - progressive web app face detector https://youtu.be/m-sCdS0sQO8?t=1699
+
 - https://openframeworks.cc/documentation/ofxEmscripten/ access camera with emscripten
 - https://libcinder.org/about
 - https://d2jta7o2zej4pf.cloudfront.net/
@@ -58,3 +59,8 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - http://blog.aviary.com/archive/live-image-processing-with-getusermedia-and-web-workers
 - webgl gpu https://www.youtube.com/watch?v=qkDg-Y9iHBA
 - https://github.com/turbo/js
+- https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_Firefox_for_Android_over_Wifi
+- (network does not work with chrome!) on device enable debugging over network, on desktop: adb connect 192.168.1.11
+- https://developers.google.com/web/tools/chrome-devtools/remote-debugging/
+- * daemon not running; starting now at tcp:5037
+- when connecting using a usb cable make sure adb debugging is enabled and the usb connnection is in data transfer mode (not just charging)
