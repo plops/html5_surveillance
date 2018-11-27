@@ -80,6 +80,18 @@ cl-cpp-generator::*frag-shader*
 		   (do0
 		    (logger (gl.getShaderInfoLog shader))
 		    (gl.deleteShader shader)))))
+	   (def create_program (gl vertex_shader fragment_shader)
+	     (let ((program (gl.createProgram))
+		   )
+	       (gl.attachShader program vertex_shader)
+	       (gl.attachShader program fragment_shader)
+	       (gl.linkProgram program)
+	       (if (gl.getProgramParameter program gl.LINK_STATUS)
+		   (return program)
+		   (do0
+		    (logger (gl.getProgramInfoLog program)
+			    )
+		    (gl.deleteProgram program)))))
 	   (let ((canvas (document.getElementById (string "c")))
 		 (gl (canvas.getContext (string "webgl")))
 		 (vertex_shader (create_shader gl gl.VERTEX_SHADER
@@ -93,7 +105,8 @@ cl-cpp-generator::*frag-shader*
 						    (string
 						     "2d-fragment-shader")
 						    )
-						   text)))))))))
+						   text)))
+		 (program (create_program gl vertex_shader fragment_shader))))))))
   (format t "~&~a~%" script-str)
  (hunchentoot:define-easy-handler (e :uri "/index.html") ()
    (cl-who:with-html-output-to-string (s)
