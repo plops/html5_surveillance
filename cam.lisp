@@ -71,10 +71,29 @@ cl-cpp-generator::*frag-shader*
 		:video (dict (deviceId (dot (aref devices 0)
 					    deviceId))))
 	       (then handle_success)))))
-	   (let ((canvas (document.getElementById (string "c"))
-		   )
-		 (gl (canvas.getContext (string "webgl"))))
-	     ())))))
+	   (def create_shader (gl type source)
+	     (let ((shader (gl.createShader type)))
+	       (gl.shaderSource shader source)
+	       (gl.compileShader shader)
+	       (if (gl.getShaderParameter shader gl.COMPILE_STATUS)
+		   (return shader)
+		   (do0
+		    (logger (gl.getShaderInfoLog shader))
+		    (gl.deleteShader shader)))))
+	   (let ((canvas (document.getElementById (string "c")))
+		 (gl (canvas.getContext (string "webgl")))
+		 (vertex_shader (create_shader gl gl.VERTEX_SHADER
+					      (dot (document.getElementById
+						    (string
+						     "2d-vertex-shader")
+						    )
+						   text)))
+		 (fragment_shader (create_shader gl gl.VERTEX_SHADER
+					      (dot (document.getElementById
+						    (string
+						     "2d-fragment-shader")
+						    )
+						   text)))))))))
   (format t "~&~a~%" script-str)
  (hunchentoot:define-easy-handler (e :uri "/index.html") ()
    (cl-who:with-html-output-to-string (s)
