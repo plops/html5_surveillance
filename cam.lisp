@@ -8,22 +8,25 @@
 (defparameter *vertex-shader*
  (cl-cpp-generator::beautify-source
   `(with-compilation-unit
+       (raw "#version 300")
        (raw "attribute vec4 a_position;")
      (function (main () "void")
 	       (setf gl_Position a_position)))))
 
 (defparameter *fragment-shader*
   (cl-cpp-generator::beautify-source
-  `(with-compilation-unit
-       (raw "precision mediump float;")
+   `(with-compilation-unit
+	(raw "#version 300")
+      (raw "precision mediump float;")
+      (raw "out vec4 fragColor")
      (function (main () "void")
-	       (setf gl_FragColor (funcall vec4 1 0 .5d0 1))))))
+	       (setf fragColor (funcall vec4 1 0 ".5" 1))))))
 
 (cl-cpp-generator::beautify-source
   `(with-compilation-unit
        (raw "precision mediump float;")
      (function (main () "void")
-	       (setf gl_FragColor (funcall vec4 1 0 .5d0 1)))))
+	       (setf gl_FragColor (funcall vec4 1 0 ".5" 1)))))
 
 (in-package #:cl-js-generator)
 
