@@ -2,13 +2,6 @@
 ;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
 (mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot" "cl-js-generator"))
 
-#+nil
-(progn(defpackage #:cl-cam
-   (:use #:cl	    ;#:hunchentoot #:cl-who #:cl-js-generator #:cl-fad
-	 ))
-      (in-package #:cl-cam)
-      (setf (readtable-case *readtable*) :invert))
-
 (in-package #:cl-js-generator)
 
 (setq cl-who:*attribute-quote-char* #\")

@@ -65,3 +65,4 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - * daemon not running; starting now at tcp:5037
 - when connecting using a usb cable make sure adb debugging is enabled and the usb connnection is in data transfer mode (not just charging)
 - i forwarded the port localhost:8080 from my desktop to 8008 on the android phone. then the camera works
+- mobile firefox on android allows reading the camera (even through http)
