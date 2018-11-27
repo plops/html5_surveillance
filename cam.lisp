@@ -13,13 +13,21 @@
 	       (setf gl_Position a_position)))))
 
 (defparameter *fragment-shader*
- (cl-cpp-generator::beautify-source
+  (cl-cpp-generator::beautify-source
   `(with-compilation-unit
        (raw "precision mediump float;")
      (function (main () "void")
-	       (setf gl_FragColor (funcall vec4 1 0 .5 1))))))
+	       (setf gl_FragColor (funcall vec4 1 0 .5d0 1))))))
+
+(cl-cpp-generator::beautify-source
+  `(with-compilation-unit
+       (raw "precision mediump float;")
+     (function (main () "void")
+	       (setf gl_FragColor (funcall vec4 1 0 .5d0 1)))))
 
 (in-package #:cl-js-generator)
+
+
 
 cl-cpp-generator::*frag-shader*
 
