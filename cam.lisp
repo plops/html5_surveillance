@@ -5,6 +5,7 @@
 
 (in-package #:cl-cpp-generator)
 
+
 (cl-cpp-generator::beautify-source
  `(with-compilation-unit
       (raw "attribute vec4 a_position;")
