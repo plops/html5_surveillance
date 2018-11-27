@@ -1,8 +1,26 @@
 ;; https://common-lisp.net/project/parenscript/tutorial.html
 ;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
-(mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot" "cl-js-generator"))
+(mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot"
+		       "cl-js-generator" "cl-cpp-generator"))
+
+(in-package #:cl-cpp-generator)
+
+(cl-cpp-generator::beautify-source
+ `(with-compilation-unit
+      (raw "attribute vec4 a_position;")
+    (function (main () "void")
+	      (setf gl_Position a_position))))
+
+(defparameter *frag-shader*
+ (cl-cpp-generator::beautify-source
+  `(with-compilation-unit
+       (raw "precision mediump float;")
+     (function (main () "void")
+	       (setf gl_FragColor (funcall vec4 1 0 .5 1))))))
 
 (in-package #:cl-js-generator)
+
+cl-cpp-generator::*frag-shader*
 
 (setq cl-who:*attribute-quote-char* #\")
 (setf cl-who::*html-mode* :html5)
