@@ -5,14 +5,14 @@
 
 (in-package #:cl-cpp-generator)
 
+(defparameter *vertex-shader*
+ (cl-cpp-generator::beautify-source
+  `(with-compilation-unit
+       (raw "attribute vec4 a_position;")
+     (function (main () "void")
+	       (setf gl_Position a_position)))))
 
-(cl-cpp-generator::beautify-source
- `(with-compilation-unit
-      (raw "attribute vec4 a_position;")
-    (function (main () "void")
-	      (setf gl_Position a_position))))
-
-(defparameter *frag-shader*
+(defparameter *fragment-shader*
  (cl-cpp-generator::beautify-source
   `(with-compilation-unit
        (raw "precision mediump float;")
@@ -70,7 +70,11 @@ cl-cpp-generator::*frag-shader*
 	       (navigator.mediaDevices.getUserMedia
 		:video (dict (deviceId (dot (aref devices 0)
 					    deviceId))))
-	       (then handle_success)))))))))
+	       (then handle_success)))))
+	   (let ((canvas (document.getElementById (string "c"))
+		   )
+		 (gl (canvas.getContext (string "webgl"))))
+	     ())))))
   (format t "~&~a~%" script-str)
  (hunchentoot:define-easy-handler (e :uri "/index.html") ()
    (cl-who:with-html-output-to-string (s)
@@ -79,6 +83,13 @@ cl-cpp-generator::*frag-shader*
       (:body (:h2 "camera")
 	     (:div :id "log")
 	     (:video :id "player" :controls t)
+	     (:canvas :id "c")
+	     (:script :id (string "2d-vertex-shader")  :type "notjs"
+			     (princ  cl-cpp-generator::*vertex-shader*
+			     s))
+	     (:script :id (string "2d-fragment-shader") :type "notjs"
+			     (princ
+			     cl-cpp-generator::*fragment-shader* s))
 	     (:script :type "text/javascript"
 		      (princ script-str s)
 		      ))))))
