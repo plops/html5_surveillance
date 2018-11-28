@@ -78,6 +78,8 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
    certificate in the future, simply run certbot again. To
    non-interactively renew *all* of your certificates, run "certbot
    renew"
+- here is an example of how to self-sign:
+- https://stackoverflow.com/questions/50749373/hunchentoot-define-easy-handler-with-ssl
 
 # Install nginx
 wget http://nginx.org/download/nginx-1.15.7.tar.gz

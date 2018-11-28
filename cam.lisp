@@ -1,8 +1,5 @@
 ;; https://common-lisp.net/project/parenscript/tutorial.html
 ;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
-<<<<<<< HEAD
-(mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot" "cl-js-generator"))
-=======
 (mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot"
 		       "cl-js-generator" "cl-cpp-generator"))
 
@@ -31,24 +28,20 @@
      (function (main () "void")
 	       (setf gl_FragColor (funcall vec4 1 0 ".5" 1)))))
 
->>>>>>> 5c60f22e8ea74efdbe0a330f8c443c431c95970f
 (in-package #:cl-js-generator)
 
 
-
-cl-cpp-generator::*frag-shader*
-
 (setq cl-who:*attribute-quote-char* #\")
 (setf cl-who::*html-mode* :html5)
-
-;;(hunchentoot:start (make-instance 'hunchentoot:easy-acceptor :port 8080))
-(hunchentoot:start (make-instance 'hunchentoot:ssl-acceptor
+;; (defparameter *no-ssl*  (make-instance 'hunchentoot:easy-acceptor :port 8080))
+(defparameter *ssl*  (make-instance 'hunchentoot:ssl-acceptor
 				  :ssl-privatekey-file "/etc/letsencrypt/live/cheapnest.org/privkey.pem"
 				  :ssl-certificate-file "/etc/letsencrypt/live/cheapnest.org/fullchain.pem" :port 9449))
+(hunchentoot:start *ssl*)
 
 
 
-(cl-js-generator::test)
+;;(cl-js-generator::test)
 
 (let ((script-str
        (;cl-js-generator::emit-js :code ;
@@ -128,7 +121,7 @@ cl-cpp-generator::*frag-shader*
 						   text)))
 		 (program (create_program gl vertex_shader fragment_shader))))))))
   (format t "~&~a~%" script-str)
- (hunchentoot:define-easy-handler (e :uri "/index.html") ()
+ (hunchentoot:define-easy-handler (*ssl* :uri "/index.html") ()
    (cl-who:with-html-output-to-string (s)
      (:html
       (:head (:title "cam"))
