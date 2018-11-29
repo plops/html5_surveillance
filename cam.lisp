@@ -134,11 +134,7 @@
 							   )
 							  text)))
 		     (program (create_program gl vertex_shader
-					      fragment_shader))
-		     )
-		    
-		    
-		    
+					      fragment_shader)))
 		    (let-g ((positon_attribute_location (gl.getAttribLocation
 							 program (string
 								  "a_position")))
@@ -146,7 +142,7 @@
 			   (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
 			   (let-g ((positions (list 0 0 0 ".5" ".7" 0)))
 				  (gl.bufferData gl.ARRAY_BUFFER
-						 (new (Float32Array positions))
+						 ("new Float32Array" positions)
 						 gl.STATIC_DRAWxs)))))
 	   (window.addEventListener (string "load")
 					     startup false)))))
