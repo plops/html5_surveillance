@@ -6,24 +6,21 @@
 (in-package #:cl-cpp-generator)
 
 (defparameter *vertex-shader*
- (cl-cpp-generator::beautify-source
-  `(with-compilation-unit
-       (raw "attribute vec4 a_position;")
-     (function (main () "void")
-	       (setf gl_Position a_position)))))
+  (cl-cpp-generator::beautify-source
+   `(with-compilation-unit
+	;(raw "#version 100")
+      (raw "attribute vec4 a_position;")
+      (function (main () "void")
+		(setf gl_Position a_position)))))
 
 (defparameter *fragment-shader*
   (cl-cpp-generator::beautify-source
    `(with-compilation-unit
+	;(raw "#version 100")
       (raw "precision mediump float;")
       (function (main () "void")
-	       (setf gl_fragColor (funcall vec4 1 0 ".5" 1))))))
-
-(cl-cpp-generator::beautify-source
-  `(with-compilation-unit
-       (raw "precision mediump float;")
-     (function (main () "void")
-	       (setf gl_FragColor (funcall vec4 1 0 ".5" 1)))))
+		(let ((c :type "mediump vec4" :init (funcall vec4 1 0 ".5" 1)))
+		  (setf gl_FragColor c))))))
 
 
 (in-package #:cl-js-generator)
@@ -88,16 +85,29 @@
 	       (then handle_success)))))
 	   (def create_shader (gl type source)
 	     (let ((shader (gl.createShader type)))
+	       (logger (string "create_shader .."))
+	       (logger type)
 	       (gl.shaderSource shader source)
 	       (gl.compileShader shader)
-	       (if (gl.getShaderParameter shader gl.COMPILE_STATUS)
-		   (return shader)
-		   (do0
-		    (logger (gl.getShaderInfoLog shader))
-		    (gl.deleteShader shader)))))
+	       (let ((success (gl.getShaderParameter shader
+						     gl.COMPILE_STATUS)))
+		 (logger success)
+		(if success
+		    (do0
+		     (logger source)
+		     (logger shader)
+		     (return shader))
+		    (do0
+		     (logger (string "error create_shader:"))
+		     (logger (gl.getShaderInfoLog shader))
+		     (gl.deleteShader shader))))))
 	   (def create_program (gl vertex_shader fragment_shader)
 	     (let ((program (gl.createProgram))
 		   )
+	       (logger (string "create_program .."))
+	       
+	       
+	       (logger vertex_shader)
 	       (gl.attachShader program vertex_shader)
 	       (gl.attachShader program fragment_shader)
 	       (gl.linkProgram program)
@@ -115,13 +125,24 @@
 						     "2d-vertex-shader")
 						    )
 						   text)))
-		 (fragment_shader (create_shader gl gl.VERTEX_SHADER
+		 (fragment_shader (create_shader gl gl.FRAGMENT_SHADER
 					      (dot (document.getElementById
 						    (string
 						     "2d-fragment-shader")
 						    )
 						   text)))
-		 (program (create_program gl vertex_shader fragment_shader))))))))
+		 (program (create_program gl vertex_shader
+					  fragment_shader))
+		 (positon_attribute_location (gl.getAttributeLocation
+					      program (string
+						       "a_position")))
+		 (position_buffer (gl.createBuffer))
+		 )
+	     (gl.bindBuffer gl.ARRAY_BUFFER positionBuffer)
+	     (let ((positions (list 0 0 0 ".5" ".7" 0)))
+	       (gl.bufferData gl.ARRAY_BUFFER
+			      (new (Float32Array positions))
+			      gl.STATIC_DRAWxs)))))))
   ;(format t "~&~a~%" script-str)
 
   (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
