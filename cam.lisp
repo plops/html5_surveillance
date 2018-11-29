@@ -109,7 +109,7 @@
 						   text)))
 		 (program (create_program gl vertex_shader fragment_shader))))))))
   (format t "~&~a~%" script-str)
- (hunchentoot:define-easy-handler (ssl :uri "/secure" :acceptor-names '(ssl)) ()
+ (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
    (cl-who:with-html-output-to-string (s)
      (:html
       (:head (:title "cam"))
@@ -134,8 +134,8 @@
 (defparameter *ssl*  (make-instance
 		      'hunchentoot:ssl-acceptor
 		      :name 'ssl
-		      :ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"
-		      :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
+		      :ssl-privatekey-file  #P"/tmp/server.key" :ssl-certificate-file #P"/tmp/server.crt"
+		      ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem" :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 		      :port 9449
 		      ))
 
