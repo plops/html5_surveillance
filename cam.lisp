@@ -43,7 +43,7 @@
 (hunchentoot:start *ssl-acceptor*)
 
 (let ((script-str
-       (;cl-js-generator::emit-js :code ;
+       (			     ;cl-js-generator::emit-js :code ;
 	cl-js-generator::beautify-source
 	`(let ((player (document.getElementById (string "player")))
 	       (log (document.getElementById (string "log"))))
@@ -69,29 +69,31 @@
 	    (then  (lambda (devices)
 		     
 		     (setf devices
-			     (devices.filter
-			      (lambda (d)
-				(return (===
-					 (string "videoinput")
-					 d.kind)))))
+			   (devices.filter
+			    (lambda (d)
+			      (return (===
+				       (string "videoinput")
+				       d.kind)))))
 		     (logger devices)
 		     (return devices)))
 	    (then
 	     (lambda (devices)
-	      (dot
-	       (navigator.mediaDevices.getUserMedia
-		:video (dict (deviceId (dot (aref devices 0)
-					    deviceId))))
-	       (then handle_success)))))
+	       (dot
+		(navigator.mediaDevices.getUserMedia
+		 :video (dict (deviceId (dot (aref devices 0)
+					     deviceId))))
+		(then handle_success)))))
 	   (def create_shader (gl type source)
-	     (let ((shader (gl.createShader type)))
-	       (logger (string "create_shader .."))
-	       (logger type)
-	       (gl.shaderSource shader source)
-	       (gl.compileShader shader)
-	       (let ((success (gl.getShaderParameter shader
-						     gl.COMPILE_STATUS)))
-		 (logger success)
+	     (				; statement
+	      let ((shader (gl.createShader type)))
+					;(var-decl shader (gl.createShader type))
+	      (logger (string "create_shader .."))
+	      (logger type)
+	      (gl.shaderSource shader source)
+	      (gl.compileShader shader)
+	      (let ((success (gl.getShaderParameter shader
+						    gl.COMPILE_STATUS)))
+		(logger success)
 		(if success
 		    (do0
 		     (logger source)
@@ -120,17 +122,17 @@
 	   (let ((canvas (document.getElementById (string "c")))
 		 (gl (canvas.getContext (string "webgl")))
 		 (vertex_shader (create_shader gl gl.VERTEX_SHADER
-					      (dot (document.getElementById
-						    (string
-						     "2d-vertex-shader")
-						    )
-						   text)))
+					       (dot (document.getElementById
+						     (string
+						      "2d-vertex-shader")
+						     )
+						    text)))
 		 (fragment_shader (create_shader gl gl.FRAGMENT_SHADER
-					      (dot (document.getElementById
-						    (string
-						     "2d-fragment-shader")
-						    )
-						   text)))
+						 (dot (document.getElementById
+						       (string
+							"2d-fragment-shader")
+						       )
+						      text)))
 		 (program (create_program gl vertex_shader
 					  fragment_shader))
 		 (positon_attribute_location (gl.getAttributeLocation
@@ -143,25 +145,25 @@
 	       (gl.bufferData gl.ARRAY_BUFFER
 			      (new (Float32Array positions))
 			      gl.STATIC_DRAWxs)))))))
-  ;(format t "~&~a~%" script-str)
+					;(format t "~&~a~%" script-str)
 
   (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
-   (cl-who:with-html-output-to-string (s)
-     (:html
-      (:head (:title "cam"))
-      (:body (:h2 "camera")
-	     (:div :id "log")
-	     (:video :id "player" :controls t)
-	     (:canvas :id "c")
-	     (:script :id (string "2d-vertex-shader")  :type "notjs"
-			     (princ  cl-cpp-generator::*vertex-shader*
-			     s))
-	     (:script :id (string "2d-fragment-shader") :type "notjs"
-			     (princ
-			     cl-cpp-generator::*fragment-shader* s))
-	     (:script :type "text/javascript"
-		      (princ script-str s)
-		      ))))))
+    (cl-who:with-html-output-to-string (s)
+      (:html
+       (:head (:title "cam"))
+       (:body (:h2 "camera")
+	      (:div :id "log")
+	      (:video :id "player" :controls t)
+	      (:canvas :id "c")
+	      (:script :id (string "2d-vertex-shader")  :type "notjs"
+		       (princ  cl-cpp-generator::*vertex-shader*
+			       s))
+	      (:script :id (string "2d-fragment-shader") :type "notjs"
+		       (princ
+			cl-cpp-generator::*fragment-shader* s))
+	      (:script :type "text/javascript"
+		       (princ script-str s)
+		       ))))))
 
 
 
