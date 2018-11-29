@@ -4,7 +4,8 @@
 (mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot"
 		       "cl-js-generator" "cl-cpp-generator"))
 
-(defpackage :web (:use :cl :hunchentoot))
+(defpackage :web (:use :cl ;:hunchentoot
+		       ))
 (in-package :web)
 
 ;; This url can be accessed by all acceptors
@@ -13,7 +14,7 @@
   "NORMAL PAGE")
 
 ;; This url can be accessed only by an acceptor named SSL
-(define-easy-handler (ssl :uri "/secure" :acceptor-names '(ssl)) ()
+(hunchentoot:define-easy-handler (ssl :uri "/secure" :acceptor-names '(ssl)) ()
   (setf (content-type*) "text/plain")
   "SECURED PAGE")
 
@@ -120,7 +121,7 @@
   (make-instance 'easy-acceptor :port 8080))
 
 (defvar *ssl-acceptor*
-  (make-instance 'easy-ssl-acceptor
+  (make-instance 'hunchentoot:easy-ssl-acceptor
                  :name 'ssl
                  :port 7777
 		 :ssl-privatekey-file  #P"/tmp/server.key"
@@ -129,5 +130,6 @@
 		      ))
 
 
-(start *ssl-acceptor*)
+(hunchentoot:start *ssl-acceptor*
+ )
 (start *no-ssl-acceptor*)
