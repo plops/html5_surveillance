@@ -25,12 +25,25 @@
      (function (main () "void")
 	       (setf gl_FragColor (funcall vec4 1 0 ".5" 1)))))
 
+
 (in-package #:cl-js-generator)
+
 
 
 (setq cl-who:*attribute-quote-char* #\")
 (setf cl-who::*html-mode* :html5)
 
+
+(defvar *ssl-acceptor*
+  (make-instance 'hunchentoot:easy-ssl-acceptor
+                 :name 'ssl
+                 :port 7777
+		 :ssl-privatekey-file  #P"/tmp/server.key"
+                 :ssl-certificate-file #P"/tmp/server.crt"
+		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
+		      ))
+
+(hunchentoot:start *ssl-acceptor*)
 
 (let ((script-str
        (;cl-js-generator::emit-js :code ;
@@ -109,8 +122,9 @@
 						    )
 						   text)))
 		 (program (create_program gl vertex_shader fragment_shader))))))))
-  (format t "~&~a~%" script-str)
- (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
+  ;(format t "~&~a~%" script-str)
+
+  (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
    (cl-who:with-html-output-to-string (s)
      (:html
       (:head (:title "cam"))
@@ -131,18 +145,3 @@
 
 
 
-;; (defparameter *no-ssl*  (make-instance 'hunchentoot:easy-acceptor :port 8080))
-(defparameter *ssl*  (make-instance
-		      'hunchentoot:ssl-acceptor
-		      :name 'ssl
-		      :ssl-privatekey-file  #P"/tmp/server.key" :ssl-certificate-file #P"/tmp/server.crt"
-		      ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem" :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
-		      :port 9449
-		      ))
-
-
-
-
-
-
-(hunchentoot:start *ssl*)

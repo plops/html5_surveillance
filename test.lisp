@@ -8,6 +8,8 @@
 		       ))
 (in-package :web)
 
+;(use-package :hunchentoot)
+
 ;; This url can be accessed by all acceptors
 (define-easy-handler (no-ssl :uri "/normal") ()
   (setf (content-type*) "text/plain")
@@ -15,7 +17,7 @@
 
 ;; This url can be accessed only by an acceptor named SSL
 (hunchentoot:define-easy-handler (ssl :uri "/secure" :acceptor-names '(ssl)) ()
-  (setf (content-type*) "text/plain")
+  (setf (hunchentoot:content-type*) "text/plain")
   "SECURED PAGE")
 
 
@@ -106,12 +108,7 @@
 	     (:div :id "log")
 	     (:video :id "player" :controls t)
 	     (:canvas :id "c")
-	     (:script :id (string "2d-vertex-shader")  :type "notjs"
-			     (princ  cl-cpp-generator::*vertex-shader*
-			     s))
-	     (:script :id (string "2d-fragment-shader") :type "notjs"
-			     (princ
-			     cl-cpp-generator::*fragment-shader* s))
+
 	     (:script :type "text/javascript"
 		      (princ script-str s)
 		      ))))))
