@@ -85,24 +85,24 @@
 		(then handle_success)))))
 	   (def create_shader (gl type source)
 	     (				; statement
-	      let ((shader (gl.createShader type)))
+	      let-g ((shader (gl.createShader type)))
 					;(var-decl shader (gl.createShader type))
-	      (logger (string "create_shader .."))
-	      (logger type)
-	      (gl.shaderSource shader source)
-	      (gl.compileShader shader)
-	      (let ((success (gl.getShaderParameter shader
-						    gl.COMPILE_STATUS)))
-		(logger success)
-		(if success
-		    (do0
-		     (logger source)
-		     (logger shader)
-		     (return shader))
-		    (do0
-		     (logger (string "error create_shader:"))
-		     (logger (gl.getShaderInfoLog shader))
-		     (gl.deleteShader shader))))))
+		    (logger (string "create_shader .."))
+		    (logger type)
+		    (gl.shaderSource shader source)
+		    (gl.compileShader shader)
+		    (let-g ((success (gl.getShaderParameter shader
+							    gl.COMPILE_STATUS)))
+			   (logger success)
+			   (if success
+			       (do0
+				(logger source)
+				(logger shader)
+				(return shader))
+			       (do0
+				(logger (string "error create_shader:"))
+				(logger (gl.getShaderInfoLog shader))
+				(gl.deleteShader shader))))))
 	   (def create_program (gl vertex_shader fragment_shader)
 	     (let ((program (gl.createProgram)))
 	       (logger (string "create_program .."))
@@ -117,7 +117,7 @@
 		   (do0
 		    (logger (gl.getProgramInfoLog program))
 		    (gl.deleteProgram program)))))
-	   (let ((canvas (document.getElementById (string "c")))
+	   (let-g ((canvas (document.getElementById (string "c")))
 		 (gl (canvas.getContext (string "webgl")))
 		 (vertex_shader (create_shader gl gl.VERTEX_SHADER
 					       (dot (document.getElementById
