@@ -45,7 +45,7 @@
 (let ((script-str
        (			     ;cl-js-generator::emit-js :code ;
 	cl-js-generator::beautify-source
-	`(let ((player (document.getElementById (string "player")))
+	`(let-g ((player (document.getElementById (string "player")))
 	       (log (document.getElementById (string "log"))))
 	   (def logger (message)
 	     (if (== (string "object") (typeof message))
@@ -104,8 +104,7 @@
 		     (logger (gl.getShaderInfoLog shader))
 		     (gl.deleteShader shader))))))
 	   (def create_program (gl vertex_shader fragment_shader)
-	     (let ((program (gl.createProgram))
-		   )
+	     (let ((program (gl.createProgram)))
 	       (logger (string "create_program .."))
 	       
 	       
@@ -116,8 +115,7 @@
 	       (if (gl.getProgramParameter program gl.LINK_STATUS)
 		   (return program)
 		   (do0
-		    (logger (gl.getProgramInfoLog program)
-			    )
+		    (logger (gl.getProgramInfoLog program))
 		    (gl.deleteProgram program)))))
 	   (let ((canvas (document.getElementById (string "c")))
 		 (gl (canvas.getContext (string "webgl")))
@@ -138,8 +136,7 @@
 		 (positon_attribute_location (gl.getAttributeLocation
 					      program (string
 						       "a_position")))
-		 (position_buffer (gl.createBuffer))
-		 )
+		 (position_buffer (gl.createBuffer)))
 	     (gl.bindBuffer gl.ARRAY_BUFFER positionBuffer)
 	     (let ((positions (list 0 0 0 ".5" ".7" 0)))
 	       (gl.bufferData gl.ARRAY_BUFFER
