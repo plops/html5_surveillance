@@ -135,7 +135,7 @@
 							  text)))
 		     (program (create_program gl vertex_shader
 					      fragment_shader)))
-		    (let-g ((positon_attribute_location (gl.getAttribLocation
+		    (let-g ((position_attribute_location (gl.getAttribLocation
 							 program (string
 								  "a_position")))
 			    (position_buffer (gl.createBuffer)))
@@ -143,7 +143,23 @@
 			   (let-g ((positions (list 0 0 0 ".5" ".7" 0)))
 				  (gl.bufferData gl.ARRAY_BUFFER
 						 ("new Float32Array" positions)
-						 gl.STATIC_DRAWxs)))))
+						 gl.STATIC_DRAW)))
+		    (gl.viewport 0 0 gl.canvas.width gl.canvas.height)
+		    (gl.clearColor 0 0 0 1)
+		    (gl.clear gl.COLOR_BUFFER_BIT)
+		    (gl.useProgram program)
+		    (gl.enableVertexAttribArray
+		     position_attribute_location)
+		    (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
+		    (let ((size 2)
+			  (type gl.FLOAT)
+			  (normalize false)
+			  (stride 0)
+			  (offset 0))
+		      (gl.vertexAttribPointer
+		       position_attribute_location
+		       size type normalize stride offset))
+		    ))
 	   (window.addEventListener (string "load")
 					     startup false)))))
 					;(format t "/home/martin/&~a~%" script-str)
@@ -154,8 +170,8 @@
        (:head (:title "cam"))
        (:body (:h2 "camera")
 	      (:div :id "log")
-	      (:video :id "player" :controls t)
-	      (:canvas :id "c" :width 512 :height 512)
+	      (:video :id "player" :controls t :width 320 :height 240)
+	      (:canvas :id "c" :width 320 :height 240)
 	      (:script :id (string "2d-vertex-shader")  :type "notjs"
 		       (princ  cl-cpp-generator::*vertex-shader*
 			       s))
