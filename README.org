@@ -59,6 +59,7 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://developers.google.com/web/fundamentals/media/manipulating/live-effects
 - https://webglfundamentals.org/
 - http://blog.aviary.com/archive/live-image-processing-with-getusermedia-and-web-workers
+- https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Basic_2D_animation_example boilerplate to draw into canvas
 - webgl gpu https://www.youtube.com/watch?v=qkDg-Y9iHBA
 - https://github.com/turbo/js
 - https://developer.mozilla.org/en-US/docs/Tools/Remote_Debugging/Debugging_Firefox_for_Android_over_Wifi

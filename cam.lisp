@@ -104,7 +104,7 @@
 				(logger (gl.getShaderInfoLog shader))
 				(gl.deleteShader shader))))))
 	   (def create_program (gl vertex_shader fragment_shader)
-	     (let ((program (gl.createProgram)))
+	     (let-g ((program (gl.createProgram)))
 	       (logger (string "create_program .."))
 	       
 	       
@@ -117,32 +117,40 @@
 		   (do0
 		    (logger (gl.getProgramInfoLog program))
 		    (gl.deleteProgram program)))))
-	   (let-g ((canvas (document.getElementById (string "c")))
-		 (gl (canvas.getContext (string "webgl")))
-		 (vertex_shader (create_shader gl gl.VERTEX_SHADER
-					       (dot (document.getElementById
-						     (string
-						      "2d-vertex-shader")
-						     )
-						    text)))
-		 (fragment_shader (create_shader gl gl.FRAGMENT_SHADER
-						 (dot (document.getElementById
-						       (string
-							"2d-fragment-shader")
-						       )
-						      text)))
-		 (program (create_program gl vertex_shader
-					  fragment_shader))
-		 (positon_attribute_location (gl.getAttributeLocation
-					      program (string
-						       "a_position")))
-		 (position_buffer (gl.createBuffer)))
-	     (gl.bindBuffer gl.ARRAY_BUFFER positionBuffer)
-	     (let ((positions (list 0 0 0 ".5" ".7" 0)))
-	       (gl.bufferData gl.ARRAY_BUFFER
-			      (new (Float32Array positions))
-			      gl.STATIC_DRAWxs)))))))
-					;(format t "~&~a~%" script-str)
+	   
+	   (def startup ()
+	     (let-g ((canvas (document.getElementById (string "c")))
+		     (gl (canvas.getContext (string "webgl")))
+		     (vertex_shader (create_shader gl gl.VERTEX_SHADER
+						   (dot (document.getElementById
+							 (string
+							  "2d-vertex-shader")
+							 )
+							text)))
+		     (fragment_shader (create_shader gl gl.FRAGMENT_SHADER
+						     (dot (document.getElementById
+							   (string
+							    "2d-fragment-shader")
+							   )
+							  text)))
+		     (program (create_program gl vertex_shader
+					      fragment_shader))
+		     )
+		    
+		    
+		    
+		    (let-g ((positon_attribute_location (gl.getAttribLocation
+							 program (string
+								  "a_position")))
+			    (position_buffer (gl.createBuffer)))
+			   (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
+			   (let-g ((positions (list 0 0 0 ".5" ".7" 0)))
+				  (gl.bufferData gl.ARRAY_BUFFER
+						 (new (Float32Array positions))
+						 gl.STATIC_DRAWxs)))))
+	   (window.addEventListener (string "load")
+					     startup false)))))
+					;(format t "/home/martin/&~a~%" script-str)
 
   (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
     (cl-who:with-html-output-to-string (s)
@@ -151,7 +159,7 @@
        (:body (:h2 "camera")
 	      (:div :id "log")
 	      (:video :id "player" :controls t)
-	      (:canvas :id "c")
+	      (:canvas :id "c" :width 512 :height 512)
 	      (:script :id (string "2d-vertex-shader")  :type "notjs"
 		       (princ  cl-cpp-generator::*vertex-shader*
 			       s))
