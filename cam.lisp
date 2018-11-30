@@ -120,46 +120,54 @@
 	   
 	   (def startup ()
 	     (let-g ((canvas (document.getElementById (string "c")))
-		     (gl (canvas.getContext (string "webgl")))
-		     (vertex_shader (create_shader gl gl.VERTEX_SHADER
-						   (dot (document.getElementById
-							 (string
-							  "2d-vertex-shader")
-							 )
-							text)))
-		     (fragment_shader (create_shader gl gl.FRAGMENT_SHADER
-						     (dot (document.getElementById
-							   (string
-							    "2d-fragment-shader")
-							   )
-							  text)))
-		     (program (create_program gl vertex_shader
-					      fragment_shader)))
-		    (let-g ((position_attribute_location (gl.getAttribLocation
-							 program (string
-								  "a_position")))
-			    (position_buffer (gl.createBuffer)))
-			   (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
-			   (let-g ((positions (list 0 0 0 ".5" ".7" 0)))
-				  (gl.bufferData gl.ARRAY_BUFFER
-						 ("new Float32Array" positions)
-						 gl.STATIC_DRAW)))
-		    (gl.viewport 0 0 gl.canvas.width gl.canvas.height)
-		    (gl.clearColor 0 0 0 1)
-		    (gl.clear gl.COLOR_BUFFER_BIT)
-		    (gl.useProgram program)
-		    (gl.enableVertexAttribArray
-		     position_attribute_location)
-		    (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
-		    (let ((size 2)
-			  (type gl.FLOAT)
-			  (normalize false)
-			  (stride 0)
-			  (offset 0))
-		      (gl.vertexAttribPointer
-		       position_attribute_location
-		       size type normalize stride offset))
-		    ))
+		     (gl (canvas.getContext (string "webgl"))))
+		    (if (not gl)
+			(logger (string "no gl available")))
+	      (let-g (
+		      (vertex_shader (create_shader gl gl.VERTEX_SHADER
+						    (dot (document.getElementById
+							  (string
+							   "2d-vertex-shader"))
+							 text)))
+		      (fragment_shader (create_shader gl gl.FRAGMENT_SHADER
+						      (dot (document.getElementById
+							    (string
+							     "2d-fragment-shader"))
+							   text)))
+		      (program (create_program gl vertex_shader
+					       fragment_shader)))
+		     (let-g ((position_attribute_location (gl.getAttribLocation
+							   program (string
+								    "a_position")))
+			     (position_buffer (gl.createBuffer)))
+			    (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
+			    (let-g ((positions (list 0 0 0 ".5" ".7" 0)))
+				   (gl.bufferData gl.ARRAY_BUFFER
+						  ("new Float32Array" positions)
+						  gl.STATIC_DRAW)))
+		     ;; https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
+		     (gl.viewport 0 0 gl.drawingBufferWidth
+				  gl.drawingBufferHeight)
+					;(setf aspect (/ gl.canvas.clientWidth gl.canvas.clientHeight) )
+		     (gl.clearColor 0 0 0 0)
+		     (gl.clear gl.COLOR_BUFFER_BIT)
+		     (gl.useProgram program)
+		     (gl.enableVertexAttribArray
+		      position_attribute_location)
+		     (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
+		     (let ((size 2)
+			   (type gl.FLOAT)
+			   (normalize false)
+			   (stride 0)
+			   (offset 0))
+		       (gl.vertexAttribPointer
+			position_attribute_location
+			size type normalize stride offset))
+		     (let ((primitive_type gl.TRIANGLES)
+			   (offset 0)
+			   (count 3))
+		       (gl.drawArrays primitive_type offset count))
+		     )))
 	   (window.addEventListener (string "load")
 					     startup false)))))
 					;(format t "/home/martin/&~a~%" script-str)
