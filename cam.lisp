@@ -411,7 +411,7 @@
 							   "c"))
 							 (captureStream
 							  ;; 0=capture when requestFrame is called
-							  0
+							  ;;0
 							  ))
 						    5000)
 						   (then
