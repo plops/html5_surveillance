@@ -131,6 +131,7 @@
 
 
 ;; (defparameter *no-ssl*  (make-instance 'hunchentoot:easy-acceptor :port 8080))
+;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
 (defparameter *ssl*  (make-instance
 		      'hunchentoot:ssl-acceptor
 		      :name 'ssl
