@@ -286,6 +286,37 @@
 						    src_type
 						    video)))
 
+		  (def wait (delay_ms)
+		    (return ("new Promise" (lambda (x)
+					     (setTimeout x
+							 delay_ms)))))
+
+		  (def recording_start (stream length_ms)
+		    (let-g ((recorder ("new Mediarecorder" stream))
+			  (data (list)))
+		      (setf recorder.ondataavailable (lambda (event)
+						       (data.push
+							event.data)))
+		      (recorder.start)
+		      (let-g ((stopped ("new Promise"
+					(lambda (resolve reject)
+					  (setf recorder.onstop
+						resolve
+						recorder.onerror
+						(lambda (event)
+						  (reject
+						   event.name))))))
+			      (recorded (dot (wait length_ms)
+					     (then (lambda ()
+						     (return (and (==
+								   (string
+								    "recording") recorder.state)
+								  (recorder.stop))))))))
+			     (return (dot (Promise.all (list stopped
+							     recorded))
+					  (then (lambda () (return data))))))
+		      ))
+
 		  
 		  (def startup ()
 		    (logger (string "startup .."))
@@ -340,28 +371,67 @@
 				  ,(bind-attribute "attrib_texCoord" :size 2
 						   :stride
 						   4 :offset 0)
-				  (requestAnimationFrame
-				   ((lambda () (let-g ((then 0)
-						       (tex (create_texture gl)))
-						      (def render (now)
-							(setf now_seconds (* .001)
-							      delta_time (- now_seconds
-									    then)
-							      then now)
-							(if
-							 video_arrived_p
-							 (statement
-							  (update_texture gl tex video)
-							  (gl.bindTexture gl.TEXTURE_2D tex)
-							  (let ((primitive_type gl.TRIANGLE_FAN)
-								(offset 0)
-								(count 4)) ;; number of vertices
-							    (gl.drawArrays primitive_type
-									   offset count)
-							    (gl_error_message gl
-									      (gl.getError)))))
-							(requestAnimationFrame render))
-						      (return render)))))))
+				  (let-g ((is_recording_p false))
+				   (requestAnimationFrame
+				    ((lambda ()
+				       (let-g ((then 0)
+					       (tex (create_texture gl)))
+					      (def render (now)
+						(setf now_seconds (* .001)
+						      delta_time (- now_seconds
+								    then)
+						      then now)
+						(if
+						 video_arrived_p
+						 (statement
+						  (if (not
+						       is_recording_p)
+						      (statement
+						       (setf
+						   is_recording_p true)
+						       (logger (string "start recording"))
+						       (dot (recording_start
+							     (dot (document.getElementById
+								   (string
+								    "c"))
+								  (captureStream))
+							     5000)
+							    (then
+							     (lambda
+								 (recorded_chunks)
+							       (let-g
+								((recorded_blob
+								  ("new Blob"
+								   recorded_chunks
+								   (dict (type
+									  (string
+									   "video/webm")))))
+								 )
+								(setf recording.src
+								      (URL.createObjectURL
+								       recorded_blob)
+								      download_button
+								      (document.getElementById
+								       (string
+									"download-button"))
+								      download_button.href
+								      recording.src
+								      download_button.download
+								      "capture.webm"
+								      is_recording_p
+								      false
+								      )))))))
+						  (update_texture gl tex video)
+						  (gl.bindTexture gl.TEXTURE_2D tex)
+						  (let ((primitive_type gl.TRIANGLE_FAN)
+							(offset 0)
+							(count 4)) ;; number of vertices
+						    (gl.drawArrays primitive_type
+								   offset count)
+						    (gl_error_message gl
+								      (gl.getError)))))
+						(requestAnimationFrame render))
+					      (return render))))))))
 		    )
 		  (window.addEventListener (string "load")
 					     startup false)
@@ -377,6 +447,7 @@
 		(:video :id "player" :controls t :width 320 :height
       240 :autoplay t)
 		(:canvas :id "c" :width 320 :height 240)
+		(:a  :id "download-button" :class "button" "Download")
 		(:script :id (string "2d-vertex-shader")  :type "notjs"
 			 (princ  cl-cpp-generator::*vertex-shader*
 				 s))

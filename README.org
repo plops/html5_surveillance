@@ -78,7 +78,7 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://developer.mozilla.org/en-US/docs/Web/API/File (draft, might not allow store?)
 - https://developer.mozilla.org/en-US/docs/Web/API/File/Using_files_from_web_applications
 - https://developer.mozilla.org/en-US/docs/Web/API/MediaStream_Recording_API/Recording_a_media_element here they show how to download the stream
-
+- view-source:https://mdn.mozillademos.org/en-US/docs/Web/API/MediaStream_Recording_API/Recording_a_media_element$samples/Example?revision=1395579
 
 # Types
 - typescript or eslint with tern.js?
