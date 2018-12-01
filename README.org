@@ -108,3 +108,5 @@ wget http://nginx.org/download/nginx-1.15.7.tar.gz
 - https://www.youtube.com/watch?v=Y1mx7cx6ckI Servers for WebRTC: It is not all Peer to Peer (Kranky Geek WebRTC
 Brazil 2016)
 - host, STUN (serve reflexive), TURN (relay), TURNS (relay over TLS TCP)
+- ICE process figures out how to connect the peers
+- CPaaS provider (communication platform as a service)
