@@ -222,7 +222,7 @@
 						       #\Newline
 						       msg))))))))
 		  (let-g ((video_arrived_p false))
-		    
+			 ;; https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Animating_textures_in_WebGL
 			 (def setup_video ()
 			   (let-g ((video (get_video))
 				   (playing false)
@@ -274,10 +274,21 @@
 					     gl.TEXTURE_MAG_FILTER
 					     gl.NEAREST)
 			   (return texture)))
+		  (def update_texture (gl texture video)
+		    (let ((level 0)
+			  (internal_format gl.RGBA)
+			  (src_format gl.RGBA)
+			  (src_type gl.UNSIGNED_BYTE))
+		      (gl.bindTexture gl.TEXTURE_2D texture)
+		      (gl.texImage2D gl.TEXTURE_2D level
+						    internal_format
+						    src_format
+						    src_type
+						    video)))
 		  (def startup ()
 		    (logger (string "startup .."))
 		    (let-g ((gl (get_context))
-			    #+nil (video (setup_video)))
+			    (video (setup_video)))
 			   (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
 								 (dot (document.getElementById
 								       (string
@@ -335,7 +346,9 @@
 						 gl.RGBA
 						 gl.UNSIGNED_BYTE
 						 video)
-				  (let-g ((tex (create_texture gl))))
+				  (let-g ((tex (create_texture gl)))
+					 (if video_arrived_p
+					     (update_texture gl tex video)))
 				  (gl.bindTexture gl.TEXTURE_2D tex)
 
 				  (logger (string "drawArrays .."))
