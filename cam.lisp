@@ -9,19 +9,34 @@
   (cl-cpp-generator::beautify-source
    `(with-compilation-unit
 	;(raw "#version 100")
-      (raw "attribute vec4 a_position;")
+	     (decl ((a_position :type "attribute vec2")
+	     (uv :type "attribute vec2")
+	     (texCoords :type "varying vec2")
+	     ))
       (function (main () "void")
-		(setf gl_Position a_position)))))
+		(setf gl_Position (funcall vec4  a_position 0 1)
+		      texCoords uv)))))
 
 (defparameter *fragment-shader*
   (cl-cpp-generator::beautify-source
    `(with-compilation-unit
 	;(raw "#version 100")
-      (raw "precision mediump float;")
+	(raw "precision mediump float;")
+      (decl (;(pixelCoords :type "varying vec2")
+					;(textureSize :type "uniform vec2")
+	     (texCoords :type "varying vec2")
+	     (textureSampler :type "uniform sampler2D")))
       (function (main () "void")
-		(let ((c :type "mediump vec4" :init (funcall vec4 1 0 ".5" 1)))
-		  (setf gl_FragColor c))))))
-
+		(let (#+nil (c :type "mediump vec4" :init (funcall vec4 1 0
+							     ".5" 1))
+		      #+nil (textureCoords :type vec2 :init #+nil (/ pixelCoords
+							 textureSize)
+				     
+				     )
+		      (textureColor :type vec4 :init (funcall
+		      texture2D textureSampler texCoords)))
+		  (setf gl_FragColor textureColor))))))
+(format t "~a" *fragment-shader*)
 
 (in-package #:cl-js-generator)
 
@@ -123,8 +138,11 @@
 		    (if (not gl)
 			(logger (string "no gl available"))
 			(return gl))))
+	   (def get_video ()
+	     (return (document.getElementById (string "video"))))
 	   (def startup ()
-	     (let-g ((gl (get_context)))
+	     (let-g ((gl (get_context))
+		     (video (get_video)))
 	      (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
 						    (dot (document.getElementById
 							  (string
@@ -149,6 +167,18 @@
 				   (gl.bufferData gl.ARRAY_BUFFER
 						  ("new Float32Array" positions)
 						  gl.STATIC_DRAW)))
+		     (let-g ((uv_attribute_location (gl.getAttribLocation
+							   program (string
+								    "uv")))
+			     (uv_buffer (gl.createBuffer)))
+			    (gl.bindBuffer gl.ARRAY_BUFFER uv_buffer)
+			    (let-g ((uvs (list 0 0
+						     0 1
+						     1 1
+						     1 0)))
+				   (gl.bufferData gl.ARRAY_BUFFER
+						  ("new Float32Array" uvs)
+						  gl.STATIC_DRAW)))
 		     ;; https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
 		     (gl.viewport 0 0 gl.drawingBufferWidth
 				  gl.drawingBufferHeight)
@@ -156,16 +186,37 @@
 		     (gl.clearColor .9 .8 .7 1)
 		     (gl.clear gl.COLOR_BUFFER_BIT)
 		     (gl.useProgram program)
-		     (gl.enableVertexAttribArray position_attribute_location)
-		     (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
-		     (let ((size 2)
-			   (type gl.FLOAT)
-			   (normalize false)
-			   (stride 0)
-			   (offset 0))
-		       (gl.vertexAttribPointer
-			position_attribute_location
-			size type normalize stride offset))
+		     (gl.texImage2D gl.TEXTURE_2D 0
+				    gl.RGBA gl.UNSIGNED_BYTE
+				    video)
+		     (do0
+		      (gl.enableVertexAttribArray
+		       position_attribute_location)
+		      
+		      (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
+		      (let ((size 2)
+			    (type gl.FLOAT)
+			    (normalize false)
+			    (stride 0)
+			    (offset 0))
+			(gl.vertexAttribPointer
+			 position_attribute_location
+			 size type normalize stride offset)))
+
+		     (do0
+		      (gl.enableVertexAttribArray
+		       uv_attribute_location)
+		      
+		      (gl.bindBuffer gl.ARRAY_BUFFER uv_buffer)
+		      (let ((size 2)
+			    (type gl.FLOAT)
+			    (normalize false)
+			    (stride 0)
+			    (offset 0))
+			(gl.vertexAttribPointer
+			 uv_attribute_location
+			 size type normalize stride offset)))
+
 		     (let ((primitive_type gl.TRIANGLE_FAN)
 			   (offset 0)
 			   (count 4))
