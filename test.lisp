@@ -4,8 +4,11 @@
 (mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot"
 		       "cl-js-generator" "cl-cpp-generator"))
 
-(defpackage :web (:use :cl :hunchentoot))
+(defpackage :web (:use :cl ;:hunchentoot
+		       ))
 (in-package :web)
+
+;(use-package :hunchentoot)
 
 ;; This url can be accessed by all acceptors
 (define-easy-handler (no-ssl :uri "/normal") ()
@@ -13,8 +16,8 @@
   "NORMAL PAGE")
 
 ;; This url can be accessed only by an acceptor named SSL
-(define-easy-handler (ssl :uri "/secure" :acceptor-names '(ssl)) ()
-  (setf (content-type*) "text/plain")
+(hunchentoot:define-easy-handler (ssl :uri "/secure" :acceptor-names '(ssl)) ()
+  (setf (hunchentoot:content-type*) "text/plain")
   "SECURED PAGE")
 
 
@@ -105,12 +108,7 @@
 	     (:div :id "log")
 	     (:video :id "player" :controls t)
 	     (:canvas :id "c")
-	     (:script :id (string "2d-vertex-shader")  :type "notjs"
-			     (princ  cl-cpp-generator::*vertex-shader*
-			     s))
-	     (:script :id (string "2d-fragment-shader") :type "notjs"
-			     (princ
-			     cl-cpp-generator::*fragment-shader* s))
+
 	     (:script :type "text/javascript"
 		      (princ script-str s)
 		      ))))))
@@ -120,7 +118,7 @@
   (make-instance 'easy-acceptor :port 8080))
 
 (defvar *ssl-acceptor*
-  (make-instance 'easy-ssl-acceptor
+  (make-instance 'hunchentoot:easy-ssl-acceptor
                  :name 'ssl
                  :port 7777
 		 :ssl-privatekey-file  #P"/tmp/server.key"
@@ -129,5 +127,6 @@
 		      ))
 
 
-(start *ssl-acceptor*)
+(hunchentoot:start *ssl-acceptor*
+ )
 (start *no-ssl-acceptor*)
