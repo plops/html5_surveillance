@@ -372,30 +372,36 @@
 						   :stride
 						   4 :offset 0)
 				  (let-g ((is_recording_p false))
-				   (requestAnimationFrame
-				    ((lambda ()
-				       (let-g ((then 0)
-					       (tex (create_texture gl)))
-					      (def render (now)
-						(setf now_seconds (* .001)
-						      delta_time (- now_seconds
-								    then)
-						      then now)
-						(if
-						 video_arrived_p
-						 (statement
-						  
-						  (update_texture gl tex video)
-						  (gl.bindTexture gl.TEXTURE_2D tex)
-						  (let ((primitive_type gl.TRIANGLE_FAN)
-							(offset 0)
-							(count 4)) ;; number of vertices
-						    (gl.drawArrays primitive_type
-								   offset count)
-						    (gl_error_message gl
-								      (gl.getError)))))
-						(if (not
-						       is_recording_p)
+				   (let-g ((then 0)
+					   (tex (create_texture gl)))
+					  (def render (now)
+					    (setf now_seconds (* .001)
+						  delta_time (- now_seconds
+								then)
+						  then now)
+					    (if
+					     video_arrived_p
+					     (statement
+					      
+					      (update_texture gl tex video)
+					      (gl.bindTexture gl.TEXTURE_2D tex)
+					      (let ((primitive_type gl.TRIANGLE_FAN)
+						    (offset 0)
+						    (count 4)) ;; number of vertices
+						(gl.drawArrays primitive_type
+							       offset count)
+						(gl_error_message gl
+								  (gl.getError)))
+
+					      ))
+					    
+					    (requestAnimationFrame
+					     render)
+					    ))
+				   (render)
+				   
+				   (if (not
+					is_recording_p)
 						      (statement
 						       (setf
 						   is_recording_p true)
@@ -404,7 +410,9 @@
 							     (dot (document.getElementById
 								   (string
 								    "c"))
-								  (captureStream))
+								  (captureStream
+								   ;; 0=capture when requestFrame is called
+						     0))
 							     5000)
 							    (then
 							     (lambda
@@ -430,11 +438,7 @@
 								      "capture.webm"
 								      is_recording_p
 								      false
-								      )))))))
-						(requestAnimationFrame
-						 render)
-						)
-					      (return render))))))))
+								      ))))))))))
 		    )
 		  (window.addEventListener (string "load")
 					     startup false)
