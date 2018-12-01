@@ -29,13 +29,15 @@
     (cl-cpp-generator::beautify-source
      `(with-compilation-unit
 	  (raw "#version 100")
-	(decl ((,cl-js-generator::name :type "attribute uint")
+	(decl ((,cl-js-generator::name :type "attribute float")
 	       (texCoords :type "varying vec2")
-	       ((aref uv (* 2 4)) :type "const vec2" :init (list 0 0
-								 0 1
-								 1 1
-								 1 0))
-	       ((aref position (* 2 4)) :type "const vec2" :init (list -1 -1
+	       ((aref uv ,(* 2 4)) :type "const vec2" :init (funcall
+    (aref vec2 ,(* 2 4)) 0 0
+    0 1
+    1 1
+    1 0))
+	       ((aref position ,(* 2 4)) :type "const vec2" :init
+    (funcall (aref ,(* 2 4)) -1 -1
 								       -1 1
 								       1 1
 								       1 -1))
@@ -168,8 +170,8 @@
 				   (program (create_program gl vertex_shader
 							    fragment_shader)))
 
-				  ,(let* ((type "Uint32")
-					  (gl-type "gl.UNSIGNED_INT")
+				  ,(let* ((type "Float32")
+					  (gl-type "gl.Float")
 					  (dims 1)
 					  (buf (format nil "~a_buffer" name))
 					  (loc (format nil "~a_attribute_location" name)))
