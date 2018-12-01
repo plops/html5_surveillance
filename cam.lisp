@@ -193,6 +193,29 @@
 		    (logger (string "get_video .."))
 		    (return (document.getElementById (string
 						      "video"))))
+		  (def gl_error_message (gl e)
+		    (if (!= e gl.NO_ERROR)
+			(statement
+			 (print (string "gl error: "))
+			 ,@(loop for (err msg) in 
+				 '( ;(gl.NO_ERROR 	"No error has been recorded. The value of this constant is 0.")
+				   (gl.INVALID_ENUM 	"An unacceptable value has been specified for an enumerated argument. The command is ignored and the error flag is set.")
+				   (gl.INVALID_VALUE 	"A numeric argument is out of range. The command is ignored and the error flag is set.")
+				   (gl.INVALID_OPERATION 	"The specified command is not allowed for the current state. The command is ignored and the error flag is set.")
+				   (gl.INVALID_FRAMEBUFFER_OPERATION 	"The currently bound framebuffer is not framebuffer complete when trying to render to or to read from it.")
+				   (gl.OUT_OF_MEMORY 	"Not enough memory is left to execute the command.")
+				   (gl.CONTEXT_LOST_WEBGL 	"If
+				 the WebGL context is lost, this error
+				 is returned on the first call to
+				 getError. Afterwards and  until the
+				 context has been restored, itreturns
+				 gl.NO_ERROR."))
+				
+			      collect
+				`(if (== ,err e)
+				     (logger (string ,(substitute
+						       #\Space
+				#\Newline  msg))))))))
 		  (def startup ()
 		    (logger (string "startup .."))
 		    (let-g ((gl (get_context))
@@ -238,7 +261,9 @@
 				  (let ((primitive_type gl.TRIANGLE_FAN)
 					(offset 0)
 					(count 4))
-				    (gl.drawArrays primitive_type offset count))
+				    (gl.drawArrays primitive_type
+						   offset count)
+				    (gl_error_message gl (gl.getError)))
 				  ))
 		    )
 		  (window.addEventListener (string "load")
