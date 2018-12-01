@@ -384,7 +384,17 @@
 						(if
 						 video_arrived_p
 						 (statement
-						  (if (not
+						  
+						  (update_texture gl tex video)
+						  (gl.bindTexture gl.TEXTURE_2D tex)
+						  (let ((primitive_type gl.TRIANGLE_FAN)
+							(offset 0)
+							(count 4)) ;; number of vertices
+						    (gl.drawArrays primitive_type
+								   offset count)
+						    (gl_error_message gl
+								      (gl.getError)))))
+						(if (not
 						       is_recording_p)
 						      (statement
 						       (setf
@@ -421,16 +431,9 @@
 								      is_recording_p
 								      false
 								      )))))))
-						  (update_texture gl tex video)
-						  (gl.bindTexture gl.TEXTURE_2D tex)
-						  (let ((primitive_type gl.TRIANGLE_FAN)
-							(offset 0)
-							(count 4)) ;; number of vertices
-						    (gl.drawArrays primitive_type
-								   offset count)
-						    (gl_error_message gl
-								      (gl.getError)))))
-						(requestAnimationFrame render))
+						(requestAnimationFrame
+						 render)
+						)
 					      (return render))))))))
 		    )
 		  (window.addEventListener (string "load")
