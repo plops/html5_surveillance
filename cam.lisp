@@ -117,14 +117,15 @@
 		   (do0
 		    (logger (gl.getProgramInfoLog program))
 		    (gl.deleteProgram program)))))
-	   
-	   (def startup ()
+	   (def get_context ()
 	     (let-g ((canvas (document.getElementById (string "c")))
 		     (gl (canvas.getContext (string "webgl"))))
 		    (if (not gl)
-			(logger (string "no gl available")))
-	      (let-g (
-		      (vertex_shader (create_shader gl gl.VERTEX_SHADER
+			(logger (string "no gl available"))
+			(return gl))))
+	   (def startup ()
+	     (let-g ((gl (get_context)))
+	      (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
 						    (dot (document.getElementById
 							  (string
 							   "2d-vertex-shader"))
@@ -141,7 +142,10 @@
 								    "a_position")))
 			     (position_buffer (gl.createBuffer)))
 			    (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
-			    (let-g ((positions (list 0 0 0 ".5" ".7" 0)))
+			    (let-g ((positions (list -1 -1
+						     -1 1
+						     1 1
+						     1 -1)))
 				   (gl.bufferData gl.ARRAY_BUFFER
 						  ("new Float32Array" positions)
 						  gl.STATIC_DRAW)))
@@ -149,11 +153,10 @@
 		     (gl.viewport 0 0 gl.drawingBufferWidth
 				  gl.drawingBufferHeight)
 					;(setf aspect (/ gl.canvas.clientWidth gl.canvas.clientHeight) )
-		     (gl.clearColor 0 0 0 0)
+		     (gl.clearColor .9 .8 .7 1)
 		     (gl.clear gl.COLOR_BUFFER_BIT)
 		     (gl.useProgram program)
-		     (gl.enableVertexAttribArray
-		      position_attribute_location)
+		     (gl.enableVertexAttribArray position_attribute_location)
 		     (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
 		     (let ((size 2)
 			   (type gl.FLOAT)
@@ -163,9 +166,9 @@
 		       (gl.vertexAttribPointer
 			position_attribute_location
 			size type normalize stride offset))
-		     (let ((primitive_type gl.TRIANGLES)
+		     (let ((primitive_type gl.TRIANGLE_FAN)
 			   (offset 0)
-			   (count 3))
+			   (count 4))
 		       (gl.drawArrays primitive_type offset count))
 		     )))
 	   (window.addEventListener (string "load")
