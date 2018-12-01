@@ -49,7 +49,7 @@
       (let-g ((,loc (gl.getAttribLocation ,program (string
 						    ,name)))))
       
-      (do0
+      (statement
        (gl.enableVertexAttribArray ,loc)
        (gl.bindBuffer gl.ARRAY_BUFFER ,buffer)
        (let ((size ,size)
@@ -219,7 +219,7 @@
 				     1 0  1 -1))
 				  
 
-				  (do0
+				  (statement
 					;; https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
 					(gl.viewport 0 0
 						     gl.drawingBufferWidth
