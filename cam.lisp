@@ -71,7 +71,6 @@
 
 #+nil
 (bind-attribute "uv" :size 4 :stride 4)
-
 (progn
   #.(in-package #:cl-cpp-generator)
 
@@ -85,7 +84,7 @@
 	       ))
 	(function (main () "void")
 		  (setf gl_Position (funcall vec4 attrib_position 0 1)
-		       texCoords attrib_texCoord
+			texCoords attrib_texCoord
 			)))))
 
   (defparameter *fragment-shader*
@@ -100,8 +99,8 @@
 	(function (main () "void")
 		  (let (#+nil (c :type "mediump vec4" :init (funcall vec4 1 0
 								     ".5" 1))
-			
-		         (textureColor :type vec4 :init (funcall
+			      
+		              (textureColor :type vec4 :init (funcall
 							      texture2D textureSampler texCoords)))
 		    (setf gl_FragColor textureColor
 			  ))))))
@@ -202,13 +201,13 @@
 			(statement
 			 (logger (string "gl error: "))
 			 ,@(loop for (err msg) in 
-				 '( ;(gl.NO_ERROR 	"No error has been recorded. The value of this constant is 0.")
-				   (gl.INVALID_ENUM 	"An unacceptable value has been specified for an enumerated argument. The command is ignored and the error flag is set.")
-				   (gl.INVALID_VALUE 	"A numeric argument is out of range. The command is ignored and the error flag is set.")
-				   (gl.INVALID_OPERATION 	"The specified command is not allowed for the current state. The command is ignored and the error flag is set.")
-				   (gl.INVALID_FRAMEBUFFER_OPERATION 	"The currently bound framebuffer is not framebuffer complete when trying to render to or to read from it.")
-				   (gl.OUT_OF_MEMORY 	"Not enough memory is left to execute the command.")
-				   (gl.CONTEXT_LOST_WEBGL 	"If
+				'( ;(gl.NO_ERROR 	"No error has been recorded. The value of this constant is 0.")
+				  (gl.INVALID_ENUM 	"An unacceptable value has been specified for an enumerated argument. The command is ignored and the error flag is set.")
+				  (gl.INVALID_VALUE 	"A numeric argument is out of range. The command is ignored and the error flag is set.")
+				  (gl.INVALID_OPERATION 	"The specified command is not allowed for the current state. The command is ignored and the error flag is set.")
+				  (gl.INVALID_FRAMEBUFFER_OPERATION 	"The currently bound framebuffer is not framebuffer complete when trying to render to or to read from it.")
+				  (gl.OUT_OF_MEMORY 	"Not enough memory is left to execute the command.")
+				  (gl.CONTEXT_LOST_WEBGL 	"If
 				 the WebGL context is lost, this error
 				 is returned on the first call to
 				 getError. Afterwards and  until the
@@ -227,24 +226,24 @@
 			   (let-g ((video (get_video))
 				   (playing false)
 				   (timeupdate false))
-			    (def check_ready ()
-			      (if (and playing
-				       timeupdate)
-				  (setf video_arrived_p true)))
-			   
-			    (video.addEventListener (string "playing")
-						    (lambda ()
-						      (setf playing
-							    true)
-						      (check_ready))
-						    true)
-			    (video.addEventListener (string "timeupdate")
-						    (lambda ()
-						      (setf timeupdate
-							    true)
-						      (check_ready))
-						    true)
-			    (return video))))
+				  (def check_ready ()
+				    (if (and playing
+					     timeupdate)
+					(setf video_arrived_p true)))
+				  
+				  (video.addEventListener (string "playing")
+							  (lambda ()
+							    (setf playing
+								  true)
+							    (check_ready))
+							  true)
+				  (video.addEventListener (string "timeupdate")
+							  (lambda ()
+							    (setf timeupdate
+								  true)
+							    (check_ready))
+							  true)
+				  (return video))))
 		  (def create_texture (gl)
 		    (let-g ((texture (gl.createTexture)))
 			   (gl.bindTexture gl.TEXTURE_2D texture)
@@ -256,17 +255,17 @@
 				 (src_format gl.RGBA)
 				 (src_type gl.UNSIGNED_BYTE)
 				 (pixel ("new Uint8Array" (list 0 0
-						    255 255))))
+								255 255))))
 			     (gl.texImage2D gl.TEXTURE_2D level
 					    internal_format width
 					    height border src_format
-						    src_type pixel))
+					    src_type pixel))
 			   (gl.texParameteri gl.TEXTURE_2D
-						    gl.TEXTURE_WRAP_S
-						    gl.CLAMP_TO_EDGE)
+					     gl.TEXTURE_WRAP_S
+					     gl.CLAMP_TO_EDGE)
 			   (gl.texParameteri gl.TEXTURE_2D
-						    gl.TEXTURE_WRAP_T
-						    gl.CLAMP_TO_EDGE)
+					     gl.TEXTURE_WRAP_T
+					     gl.CLAMP_TO_EDGE)
 			   (gl.texParameteri gl.TEXTURE_2D
 					     gl.TEXTURE_MIN_FILTER
 					     gl.NEAREST)
@@ -281,10 +280,10 @@
 			  (src_type gl.UNSIGNED_BYTE))
 		      (gl.bindTexture gl.TEXTURE_2D texture)
 		      (gl.texImage2D gl.TEXTURE_2D level
-						    internal_format
-						    src_format
-						    src_type
-						    video)))
+				     internal_format
+				     src_format
+				     src_type
+				     video)))
 
 		  (def wait (delay_ms)
 		    (return ("new Promise" (lambda (x)
@@ -293,29 +292,29 @@
 
 		  (def recording_start (stream length_ms)
 		    (let-g ((recorder ("new Mediarecorder" stream))
-			  (data (list)))
-		      (setf recorder.ondataavailable (lambda (event)
-						       (data.push
-							event.data)))
-		      (recorder.start)
-		      (let-g ((stopped ("new Promise"
-					(lambda (resolve reject)
-					  (setf recorder.onstop
-						resolve
-						recorder.onerror
-						(lambda (event)
-						  (reject
-						   event.name))))))
-			      (recorded (dot (wait length_ms)
-					     (then (lambda ()
-						     (return (and (==
-								   (string
-								    "recording") recorder.state)
-								  (recorder.stop))))))))
-			     (return (dot (Promise.all (list stopped
-							     recorded))
-					  (then (lambda () (return data))))))
-		      ))
+			    (data (list)))
+			   (setf recorder.ondataavailable (lambda (event)
+							    (data.push
+							     event.data)))
+			   (recorder.start)
+			   (let-g ((stopped ("new Promise"
+					     (lambda (resolve reject)
+					       (setf recorder.onstop
+						     resolve
+						     recorder.onerror
+						     (lambda (event)
+						       (reject
+							event.name))))))
+				   (recorded (dot (wait length_ms)
+						  (then (lambda ()
+							  (return (and (==
+									(string
+									 "recording") recorder.state)
+								       (recorder.stop))))))))
+				  (return (dot (Promise.all (list stopped
+								  recorded))
+					       (then (lambda () (return data))))))
+			   ))
 
 		  
 		  (def startup ()
@@ -337,28 +336,28 @@
 				   )
 				  (logger (string "fill-buffer"))
 				  ,(fill-buffer
-				   "buffer" :data1d
-				   '(list 0 0  -1 -1
-				     0 1 -1  1
-				     1 1  1  1
-				     1 0  1 -1
-				     ))
+				    "buffer" :data1d
+				    '(list 0 0  -1 -1
+				      0 1 -1  1
+				      1 1  1  1
+				      1 0  1 -1
+				      ))
 				  
 
 				  (statement
-					;; https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
-					(gl.viewport 0 0
-						     gl.drawingBufferWidth
-						     gl.drawingBufferHeight)
-					(gl_error_message gl (gl.getError))
+				   ;; https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
+				   (gl.viewport 0 0
+						gl.drawingBufferWidth
+						gl.drawingBufferHeight)
+				   (gl_error_message gl (gl.getError))
 					;(setf aspect (/ gl.canvas.clientWidth gl.canvas.clientHeight) )
-					(gl.clearColor .9 .8 .7 1)
-					(gl_error_message gl (gl.getError))
-					(gl.clear gl.COLOR_BUFFER_BIT)
-					(gl_error_message gl (gl.getError))
-					(gl.useProgram program)
-					(gl_error_message gl (gl.getError))
-					)
+				   (gl.clearColor .9 .8 .7 1)
+				   (gl_error_message gl (gl.getError))
+				   (gl.clear gl.COLOR_BUFFER_BIT)
+				   (gl_error_message gl (gl.getError))
+				   (gl.useProgram program)
+				   (gl_error_message gl (gl.getError))
+				   )
 				  
 				  (logger (string "bind-attributes"))
 				  
@@ -372,76 +371,76 @@
 						   :stride
 						   4 :offset 0)
 				  (let-g ((is_recording_p false))
-				   (let-g ((then 0)
-					   (tex (create_texture gl)))
-					  (def render (now)
-					    (setf now_seconds (* .001)
-						  delta_time (- now_seconds
-								then)
-						  then now)
-					    (if
-					     video_arrived_p
-					     (statement
-					      
-					      (update_texture gl tex video)
-					      (gl.bindTexture gl.TEXTURE_2D tex)
-					      (let ((primitive_type gl.TRIANGLE_FAN)
-						    (offset 0)
-						    (count 4)) ;; number of vertices
-						(gl.drawArrays primitive_type
-							       offset count)
-						(gl_error_message gl
-								  (gl.getError)))
+					 (let-g ((then 0)
+						 (tex (create_texture gl)))
+						(def render (now)
+						  (setf now_seconds (* .001)
+							delta_time (- now_seconds
+								      then)
+							then now)
+						  (if
+						   video_arrived_p
+						   (statement
+						    
+						    (update_texture gl tex video)
+						    (gl.bindTexture gl.TEXTURE_2D tex)
+						    (let ((primitive_type gl.TRIANGLE_FAN)
+							  (offset 0)
+							  (count 4)) ;; number of vertices
+						      (gl.drawArrays primitive_type
+								     offset count)
+						      (gl_error_message gl
+									(gl.getError)))
 
-					      ))
-					    
-					    (requestAnimationFrame
-					     render)
-					    ))
-				   (render)
-				   
-				   (if (not
-					is_recording_p)
-						      (statement
-						       (setf
-						   is_recording_p true)
-						       (logger (string "start recording"))
-						       (dot (recording_start
-							     (dot (document.getElementById
-								   (string
-								    "c"))
-								  (captureStream
-								   ;; 0=capture when requestFrame is called
-						     0))
-							     5000)
-							    (then
-							     (lambda
-								 (recorded_chunks)
-							       (let-g
-								((recorded_blob
-								  ("new Blob"
-								   recorded_chunks
-								   (dict (type
-									  (string
-									   "video/webm")))))
-								 )
-								(setf recording.src
-								      (URL.createObjectURL
-								       recorded_blob)
-								      download_button
-								      (document.getElementById
-								       (string
-									"download-button"))
-								      download_button.href
-								      recording.src
-								      download_button.download
-								      "capture.webm"
-								      is_recording_p
-								      false
-								      ))))))))))
+						    ))
+						  
+						  (requestAnimationFrame
+						   render)
+						  ))
+					 (render)
+					 
+					 (if (not
+					      is_recording_p)
+					     (statement
+					      (setf
+					       is_recording_p true)
+					      (logger (string "start recording"))
+					      (dot (recording_start
+						    (dot (document.getElementById
+							  (string
+							   "c"))
+							 (captureStream
+							  ;; 0=capture when requestFrame is called
+							  0))
+						    5000)
+						   (then
+						    (lambda
+							(recorded_chunks)
+						      (let-g
+						       ((recorded_blob
+							 ("new Blob"
+							  recorded_chunks
+							  (dict (type
+								 (string
+								  "video/webm")))))
+							)
+						       (setf recording.src
+							     (URL.createObjectURL
+							      recorded_blob)
+							     download_button
+							     (document.getElementById
+							      (string
+							       "download-button"))
+							     download_button.href
+							     recording.src
+							     download_button.download
+							     "capture.webm"
+							     is_recording_p
+							     false
+							     ))))))))))
 		    )
 		  (window.addEventListener (string "load")
-					     startup false)
+					   startup false)
 		  ))))
 					;(format t "/home/martin/&~a~%" script-str)
 
@@ -452,7 +451,7 @@
 	 (:body (:h2 "camera")
 		(:div :id "log")
 		(:video :id "player" :controls t :width 320 :height
-      240 :autoplay t)
+			240 :autoplay t)
 		(:canvas :id "c" :width 320 :height 240)
 		(:a  :id "download-button" :class "button" "Download")
 		(:script :id (string "2d-vertex-shader")  :type "notjs"
