@@ -291,7 +291,7 @@
 							 delay_ms)))))
 
 		  (def recording_start (stream length_ms)
-		    (let-g ((recorder ("new Mediarecorder" stream))
+		    (let-g ((recorder ("new MediaRecorder" stream))
 			    (data (list)))
 			   (setf recorder.ondataavailable (lambda (event)
 							    (data.push
@@ -399,11 +399,9 @@
 						  ))
 					 (render)
 					 
-					 (if (not
-					      is_recording_p)
+					 (if (not is_recording_p)
 					     (statement
-					      (setf
-					       is_recording_p true)
+					      (setf is_recording_p true)
 					      (logger (string "start recording"))
 					      (dot (recording_start
 						    (dot (document.getElementById
@@ -411,7 +409,8 @@
 							   "c"))
 							 (captureStream
 							  ;; 0=capture when requestFrame is called
-							  0))
+							  ;0
+							  ))
 						    5000)
 						   (then
 						    (lambda
