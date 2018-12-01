@@ -423,7 +423,7 @@
 								 (string
 								  "video/webm")))))
 							)
-						       (setf recording.src
+						       (setf src_url
 							     (URL.createObjectURL
 							      recorded_blob)
 							     download_button
@@ -431,7 +431,7 @@
 							      (string
 							       "download-button"))
 							     download_button.href
-							     recording.src
+							     src_url
 							     download_button.download
 							     "capture.webm"
 							     is_recording_p
