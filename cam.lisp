@@ -196,7 +196,7 @@
 		  (def get_video ()
 		    (logger (string "get_video .."))
 		    (return (document.getElementById (string
-						      "video"))))
+						      "player"))))
 		  (def gl_error_message (gl e)
 		    (if (!= e gl.NO_ERROR)
 			(statement
@@ -285,6 +285,8 @@
 						    src_format
 						    src_type
 						    video)))
+
+		  
 		  (def startup ()
 		    (logger (string "startup .."))
 		    (let-g ((gl (get_context))
@@ -346,19 +348,29 @@
 						 gl.RGBA
 						 gl.UNSIGNED_BYTE
 						 video)
-				  (let-g ((tex (create_texture gl)))
-					 (if video_arrived_p
-					     (update_texture gl tex video)))
-				  (gl.bindTexture gl.TEXTURE_2D tex)
+				  
+				  (requestAnimationFrame
+				   ((lambda () (let-g ((then 0)
+						       (tex (create_texture gl)))
+						      (def render (now)
+							(setf now_seconds (* .001)
+							      delta_time (- now_seconds
+									    then)
+							      then now)
+							(if video_arrived_p
+							    (update_texture gl tex video))
+							(gl.bindTexture gl.TEXTURE_2D tex)
 
-				  (logger (string "drawArrays .."))
-				  (let ((primitive_type gl.TRIANGLE_FAN)
-					(offset 0)
-					(count 4)) ;; number of vertices
-				    (gl.drawArrays primitive_type
-						   offset count)
-				    (gl_error_message gl (gl.getError)))
-				  ))
+					;(logger (string "drawArrays .."))
+							(let ((primitive_type gl.TRIANGLE_FAN)
+							      (offset 0)
+							      (count 4)) ;; number of vertices
+							  (gl.drawArrays primitive_type
+									 offset count)
+							  (gl_error_message gl
+									    (gl.getError)))
+							(requestAnimationFrame render))
+						      (return render)))))))
 		    )
 		  (window.addEventListener (string "load")
 					     startup false)
