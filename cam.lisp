@@ -210,7 +210,7 @@
 				 context has been restored, itreturns
 				 gl.NO_ERROR."))
 				
-			      collect
+			      collect 
 				`(if (== ,err e)
 				     (logger (string ,(substitute
 						       #\Space
