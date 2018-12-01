@@ -29,21 +29,23 @@
     (cl-cpp-generator::beautify-source
      `(with-compilation-unit
 	  (raw "#version 100")
-	(decl ((,cl-js-generator::name :type "attribute float")
-	       (texCoords :type "varying vec2")
-	       ((aref uv ,(* 2 4)) :type "const vec2" :init (funcall
-    (aref vec2 ,(* 2 4)) 0 0
-    0 1
-    1 1
-    1 0))
-	       ((aref position ,(* 2 4)) :type "const vec2" :init
-    (funcall (aref ,(* 2 4)) -1 -1
-								       -1 1
-								       1 1
-								       1 -1))
-	       ))
+	(decl ((,cl-js-generator::name :type "attribute float")))
 	(function (main () "void")
-		  (setf gl_Position (funcall vec4  (aref position index) 0 1)
+		  (let (((aref uv 4) :type "const vec2"
+			 :init (funcall
+				(aref vec2 4)
+				(funcall (aref vec2 2)  0 0)
+				(funcall (aref vec2 2)  0 1)
+				(funcall (aref vec2 2)  1 1)
+				(funcall (aref vec2 2)  1 0)))
+			((aref pos 4) :type "const vec2"
+			 :init (funcall
+				(aref vec2 4)
+				(funcall (aref vec2 2)  -1 -1)
+				(funcall (aref vec2 2)  -1 1)
+				(funcall (aref vec2 2)  1 1)
+				(funcall (aref vec2 2)  1 -1)))))
+		  (setf gl_Position (funcall vec4  (aref pos index) 0 1)
 			texCoords (aref uv index))))))
 
   (defparameter *fragment-shader*
