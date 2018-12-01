@@ -433,7 +433,7 @@
 							     download_button.href
 							     src_url
 							     download_button.download
-							     "capture.webm"
+							     (string "capture.webm")
 							     is_recording_p
 							     false
 							     ))))))))))
