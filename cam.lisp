@@ -380,8 +380,18 @@
 								   then))
 						    ))
 						  (setf then now)
+
+						  ;; alternative to
+						  ;; video_arrived_p
+						  ;; is listener on
+						  ;; video's canplay
+
+						  ;; use
+						  ;; canvas.setAttribute
+						  ;; to match width,
+						  ;; height of video
 						  (if
-						   video_arrived_p
+						   video_arrived_p 
 						   (statement
 						    
 						    (update_texture gl tex video)
@@ -445,25 +455,28 @@
 		  ))))
 					;(format t "/home/martin/&~a~%" script-str)
 
-    (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
-      (cl-who:with-html-output-to-string (s)
-	(:html
-	 (:head (:title "cam"))
-	 (:body (:h2 "camera")
-		(:div :id "log")
-		(:video :id "player" :controls t :width 320 :height
-			240 :autoplay t)
-		(:canvas :id "c" :width 320 :height 240)
-		(:a  :id "download-button" :class "button" "Download")
-		(:script :id (string "2d-vertex-shader")  :type "notjs"
-			 (princ  cl-cpp-generator::*vertex-shader*
-				 s))
-		(:script :id (string "2d-fragment-shader") :type "notjs"
-			 (princ
-			  cl-cpp-generator::*fragment-shader* s))
-		(:script :type "text/javascript"
-			 (princ script-str s)
-			 )))))))
+    (hunchentoot:define-easy-handler (securesat :uri "/secure"
+						:acceptor-names '(ssl)) ()
+      (let ((client-address (hunchentoot:remote-addr hunchentoot:*request*)))
+       (cl-who:with-html-output-to-string (s)
+	 (:html
+	  (:head (:title "cam"))
+	  (:body (:h2 "camera")
+		 (:p "client adress="(princ client-address s))
+		 (:div :id "log")
+		 (:video :id "player" :controls t :width 320 :height
+			 240 :autoplay t)
+		 (:canvas :id "c" :width 320 :height 240)
+		 (:a  :id "download-button" :class "button" "Download")
+		 (:script :id (string "2d-vertex-shader")  :type "notjs"
+			  (princ  cl-cpp-generator::*vertex-shader*
+				  s))
+		 (:script :id (string "2d-fragment-shader") :type "notjs"
+			  (princ
+			   cl-cpp-generator::*fragment-shader* s))
+		 (:script :type "text/javascript"
+			  (princ script-str s)
+			  ))))))))
 
 
 
