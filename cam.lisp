@@ -37,7 +37,7 @@
 
 (defun bind-attribute (name &key
 			      (type "Float32")
-			      (gl-type "gl.Float")
+			      (gl-type "gl.FLOAT")
 			      (offset 0)
 			      (size 1)
 			      (stride 0) ;; in elements
@@ -235,10 +235,11 @@
 				  (logger (string "fill-buffer"))
 				  ,(fill-buffer
 				   "buffer" :data1d
-				   '(list 0 0 -1 -1
-				     0 1 -1  1
-				     1 1  1  1
-				     1 0  1 -1))
+				   '(list 0 0 ; -1 -1
+				     0 1 ;-1  1
+				     1 1 ; 1  1
+				     1 0 ; 1 -1
+				     ))
 				  
 
 				  (statement
