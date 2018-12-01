@@ -24,13 +24,13 @@
 
 
 
-(defun fill-buffer (name &key (type "Float32") data1d (access "gl.STATIC_DRAW")) 
+(defun fill-buffer (name &key (type "Float32") data1d (usage-hint "gl.STATIC_DRAW")) 
   `(let-g ((,name (gl.createBuffer)))
 	  (let ((vec ,data1d))
 	    (gl.bindBuffer gl.ARRAY_BUFFER ,name)
 	    (gl.bufferData gl.ARRAY_BUFFER
 			   (,(format nil "new ~aArray" type)
-			    vec) ,access))))
+			    vec) ,usage-hint))))
 
 #+nil
 (fill-buffer "buffer" :data1d '(list 1 2 3))
@@ -50,6 +50,10 @@
 						    ,name)))))
       
       (statement
+       (if (== -1 ,loc)
+	   (statement
+	    (logger (+ (string ,loc) (string "=") ,loc) )
+	    (gl_error_message gl (gl.getError))))
        (gl.enableVertexAttribArray ,loc)
        (gl.bindBuffer gl.ARRAY_BUFFER ,buffer)
        (let ((size ,size) ;; components per iteration
@@ -63,7 +67,7 @@
 	     (offset (* ,offset
 			element_size)))
 	 (gl.vertexAttribPointer
-	  ,buffer size type normalize stride offset))))))
+	  ,loc size type normalize stride offset))))))
 
 #+nil
 (bind-attribute "uv" :size 4 :stride 4)
@@ -75,13 +79,13 @@
     (cl-cpp-generator::beautify-source
      `(with-compilation-unit
 	  (raw "#version 100")
-	(decl ((uv :type "attribute vec2")
-	       (pos :type "attribute vec2")
+	(decl ((attrib_texCoord :type "attribute vec2")
+	       (attrib_position :type "attribute vec2")
 	       (texCoords :type "varying vec2")
 	       ))
 	(function (main () "void")
-		  (setf gl_Position (funcall vec4 pos 0 1)
-		       texCoords uv
+		  (setf gl_Position (funcall vec4 attrib_position 0 1)
+		       texCoords attrib_texCoord
 			)))))
 
   (defparameter *fragment-shader*
@@ -91,12 +95,13 @@
 	(raw "precision mediump float;")
 	(decl (
 	       (texCoords :type "varying vec2")
-	       (textureSampler :type "uniform sampler2D")))
+	       (textureSampler :type "uniform sampler2D")
+	       ))
 	(function (main () "void")
 		  (let (#+nil (c :type "mediump vec4" :init (funcall vec4 1 0
 								     ".5" 1))
 			
-			(textureColor :type vec4 :init (funcall
+		         (textureColor :type vec4 :init (funcall
 							      texture2D textureSampler texCoords)))
 		    (setf gl_FragColor textureColor
 			  ))))))
@@ -214,11 +219,65 @@
 				`(if (== ,err e)
 				     (logger (string ,(substitute
 						       #\Space
-				#\Newline  msg))))))))
+						       #\Newline
+						       msg))))))))
+		  (let-g ((video_arrived_p false))
+		    
+			 (def setup_video ()
+			   (let-g ((video (get_video))
+				   (playing false)
+				   (timeupdate false))
+			    (def check_ready ()
+			      (if (and playing
+				       timeupdate)
+				  (setf video_arrived_p true)))
+			   
+			    (video.addEventListener (string "playing")
+						    (lambda ()
+						      (setf playing
+							    true)
+						      (check_ready))
+						    true)
+			    (video.addEventListener (string "timeupdate")
+						    (lambda ()
+						      (setf timeupdate
+							    true)
+						      (check_ready))
+						    true)
+			    (return video))))
+		  (def create_texture (gl)
+		    (let-g ((texture (gl.createTexture)))
+			   (gl.bindTexture gl.TEXTURE_2D texture)
+			   (let ((level 0)
+				 (internal_format gl.RGBA)
+				 (width 1)
+				 (height 1)
+				 (border 0)
+				 (src_format gl.RGBA)
+				 (src_type gl.UNSIGNED_BYTE)
+				 (pixel ("new Uint8Array" (list 0 0
+						    255 255))))
+			     (gl.texImage2D gl.TEXTURE_2D level
+					    internal_format width
+					    height border src_format
+						    src_type pixel))
+			   (gl.texParameteri gl.TEXTURE_2D
+						    gl.TEXTURE_WRAP_S
+						    gl.CLAMP_TO_EDGE)
+			   (gl.texParameteri gl.TEXTURE_2D
+						    gl.TEXTURE_WRAP_T
+						    gl.CLAMP_TO_EDGE)
+			   (gl.texParameteri gl.TEXTURE_2D
+					     gl.TEXTURE_MIN_FILTER
+					     gl.NEAREST)
+			   (gl.texParameteri gl.TEXTURE_2D
+					     gl.TEXTURE_MAG_FILTER
+					     gl.NEAREST)
+			   (return texture)))
 		  (def startup ()
 		    (logger (string "startup .."))
 		    (let-g ((gl (get_context))
-			    (video (get_video)))
+			    #+nil (video (setup_video)))
 			   (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
 								 (dot (document.getElementById
 								       (string
@@ -255,21 +314,34 @@
 					(gl_error_message gl (gl.getError))
 					(gl.useProgram program)
 					(gl_error_message gl (gl.getError))
-					#+nil (gl.texImage2D gl.TEXTURE_2D 0
-						       gl.RGBA gl.UNSIGNED_BYTE
-						       video))
+					)
+				  
 				  (logger (string "bind-attributes"))
-				  ,(bind-attribute "uv" :size 2
+				  
+
+				  ,(bind-attribute "attrib_position" :size 2
+						   :stride 4 :offset 2)
+
+
+
+				  ,(bind-attribute "attrib_texCoord" :size 2
 						   :stride
 						   4 :offset 0)
-				  (gl_error_message gl (gl.getError))
-				  ,(bind-attribute "pos" :size 2
-						   :stride 4 :offset 2)
-				  (gl_error_message gl (gl.getError))
+				  ;(gl.disableVertexAttribArray attrib_texCoord_attribute_location)
+				  
+				  #+nil (gl.texImage2D gl.TEXTURE_2D
+						 0
+						 gl.RGBA
+						 gl.RGBA
+						 gl.UNSIGNED_BYTE
+						 video)
+				  (let-g ((tex (create_texture gl))))
+				  (gl.bindTexture gl.TEXTURE_2D tex)
+
 				  (logger (string "drawArrays .."))
 				  (let ((primitive_type gl.TRIANGLE_FAN)
 					(offset 0)
-					(count 4))
+					(count 4)) ;; number of vertices
 				    (gl.drawArrays primitive_type
 						   offset count)
 				    (gl_error_message gl (gl.getError)))
@@ -286,7 +358,8 @@
 	 (:head (:title "cam"))
 	 (:body (:h2 "camera")
 		(:div :id "log")
-		(:video :id "player" :controls t :width 320 :height 240)
+		(:video :id "player" :controls t :width 320 :height
+      240 :autoplay t)
 		(:canvas :id "c" :width 320 :height 240)
 		(:script :id (string "2d-vertex-shader")  :type "notjs"
 			 (princ  cl-cpp-generator::*vertex-shader*
@@ -300,44 +373,3 @@
 
 
 
-
-#+nil
-((let-g ((position_attribute_location (gl.getAttribLocation
-							    program (string
-								     "a_position")))
-			      (position_buffer (gl.createBuffer)))
-			     (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
-			     (let-g ((positions (list -1 -1
-						      -1 1
-						      1 1
-						      1 -1)))
-				    (gl.bufferData gl.ARRAY_BUFFER
-						   ("new Float32Array" positions)
-						   gl.STATIC_DRAW)))
-		      (let-g ((uv_attribute_location (gl.getAttribLocation
-						      program (string
-							       "uv")))
-			      (uv_buffer (gl.createBuffer)))
-			     (gl.bindBuffer gl.ARRAY_BUFFER uv_buffer)
-			     (let-g ((uvs (list 0 0
-						0 1
-						1 1
-						1 0)))
-				    (gl.bufferData gl.ARRAY_BUFFER
-						   ("new Float32Array" uvs)
-						   gl.STATIC_DRAW))))
-
-#+nil
-(do0
-		       (gl.enableVertexAttribArray
-			position_attribute_location)
-		      
-		       (gl.bindBuffer gl.ARRAY_BUFFER position_buffer)
-		       (let ((size 2)
-			     (type gl.FLOAT)
-			     (normalize false)
-			     (stride 0) ;; (* 2 Float32Array.BYTES_PER_ELEMENT)
-			     (offset 0))
-			 (gl.vertexAttribPointer
-			  position_attribute_location
-			  size type normalize stride offset)))
