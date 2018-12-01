@@ -52,14 +52,14 @@
       (statement
        (gl.enableVertexAttribArray ,loc)
        (gl.bindBuffer gl.ARRAY_BUFFER ,buffer)
-       (let ((size ,size)
+       (let ((size ,size) ;; components per iteration
 	     (type ,gl-type)
 	     (normalize false)
 	     (element_size ,(format
 			  nil "~aArray.BYTES_PER_ELEMENT" type))
 	     (stride (* ,stride
 
-			element_size))  
+			element_size)) ;; 0 = move forward size * sizeof(type) each iteration to get the next position
 	     (offset (* ,offset
 			element_size)))
 	 (gl.vertexAttribPointer
@@ -75,32 +75,31 @@
     (cl-cpp-generator::beautify-source
      `(with-compilation-unit
 	  (raw "#version 100")
-	(decl ((uv :type "attribute vec2")
+	(decl (;(uv :type "attribute vec2")
 	       (pos :type "attribute vec2")
-	       (texCoords :type "varying vec2")))
+	       ;(texCoords :type "varying vec2")
+	       ))
 	(function (main () "void")
 		  (setf gl_Position (funcall vec4 pos 0 1)
-			texCoords uv)))))
+			;texCoords uv
+			)))))
 
   (defparameter *fragment-shader*
     (cl-cpp-generator::beautify-source
      `(with-compilation-unit
 	  (raw "#version 100")
 	(raw "precision mediump float;")
-	(decl (;(pixelCoords :type "varying vec2")
-					;(textureSize :type "uniform vec2")
-	       (texCoords :type "varying vec2")
+	(decl (
+	       ;(texCoords :type "varying vec2")
 	       (textureSampler :type "uniform sampler2D")))
 	(function (main () "void")
-		  (let (#+nil (c :type "mediump vec4" :init (funcall vec4 1 0
+		  (let ((c :type "mediump vec4" :init (funcall vec4 1 0
 								     ".5" 1))
-			      #+nil (textureCoords :type vec2 :init #+nil (/ pixelCoords
-									     textureSize)
-						   
-						   )
-			      (textureColor :type vec4 :init (funcall
+			
+			#+nil (textureColor :type vec4 :init (funcall
 							      texture2D textureSampler texCoords)))
-		    (setf gl_FragColor textureColor))))))
+		    (setf gl_FragColor c ;textureColor
+			  ))))))
   (format t "~a" *fragment-shader*)
 
   
@@ -247,17 +246,25 @@
 					(gl.viewport 0 0
 						     gl.drawingBufferWidth
 						     gl.drawingBufferHeight)
+					(gl_error_message gl (gl.getError))
 					;(setf aspect (/ gl.canvas.clientWidth gl.canvas.clientHeight) )
 					(gl.clearColor .9 .8 .7 1)
+					(gl_error_message gl (gl.getError))
 					(gl.clear gl.COLOR_BUFFER_BIT)
+					(gl_error_message gl (gl.getError))
 					(gl.useProgram program)
+					(gl_error_message gl (gl.getError))
 					#+nil (gl.texImage2D gl.TEXTURE_2D 0
 						       gl.RGBA gl.UNSIGNED_BYTE
 						       video))
 				  (logger (string "bind-attributes"))
-				  ,(bind-attribute "uv" :size 4 :stride 4)
-				  ,(bind-attribute "pos" :size 4
-						  :stride 4 :offset 2)
+				  #+nil (statment ,(bind-attribute "uv" :size 2
+								   :stride 4)
+						  (gl_error_message gl (gl.getError)))
+				  ,(bind-attribute "pos" :size 2
+						   :stride 0 :offset 0)
+				  (gl_error_message gl (gl.getError))
+				  (logger (string "drawArrays .."))
 				  (let ((primitive_type gl.TRIANGLE_FAN)
 					(offset 0)
 					(count 4))
