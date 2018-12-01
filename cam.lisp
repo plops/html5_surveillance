@@ -22,31 +22,103 @@
 (hunchentoot:start *ssl-acceptor*)
 
 
-(let ((name "index_vert"))
+
+
+(defun fill-buffer (name &key (type "Float32") data1d (access "gl.STATIC_DRAW")) 
+  `(let-g ((,name (gl.createBuffer)))
+	  (gl.bindBuffer gl.ARRAY_BUFFER ,name)
+	  (let ((vec ,data1d))
+	    (gl.bufferData gl.ARRAY_BUFFER
+			   (,(format nil "new ~aArray" type)
+			    vec) ,access))))
+
+#+nil
+(fill-buffer "buffer" :data1d '(list 1 2 3))
+
+(defun with-attributes (args &rest body)
+  (destructuring-bind (&key (buffer "buffer")
+			    (program "program")
+			    attributes) args
+   (loop for decl in attributes collect
+	(destructuring-bind (name &key
+				  (type "Float32")
+				  (gl-type "gl.Float")
+				  data) decl
+	  (let ((loc (format nil "~a_attribute_location" name)))
+	   `(do0
+	     (let-g ((,loc (gl.getAttribLocation ,program (string
+							   ,name)))))
+	     
+	     ,@body
+	     (do0
+	      (gl.enableVertexAttribArray ,loc)
+	      (gl.bindBuffer gl.ARRAY_BUFFER ,buffer)
+	      (let ((size ,(length data))
+		    (type ,gl-type)
+		    (normalize false)
+		    (stride (* ,(length (elt data 0))
+			       ,(format
+				 nil "~aArray.BYTES_PER_ELEMENT" type)))  
+		    (offset 0))
+		(gl.vertexAttribPointer
+		 ,buffer size type normalize stride offset)))))))))
+
+#+nil
+(with-attributes '(buffer
+		  ((pos :data '((-1 -1)
+			       (-1 1)
+			       (1 1)
+			       (1 -1)))
+		   (uv :data '((0 0)
+			      (0 1)
+			      (1 1)
+			      (1 0))))))
+
+(defun with-buffer (shader name data &key (type "Float32") (gl-type "gl.Float")
+  (stride-elements 2))
+ (let* ((buf (format nil "~a_buffer" shader))
+	(loc (format nil "~a_attribute_location" name)))
+   `(do0
+     (let-g (
+	     (,loc
+	      (gl.getAttribLocation
+	       program (string ,name)))
+	     (,buf (gl.createBuffer)))
+	    (gl.bindBuffer
+	     gl.ARRAY_BUFFER ,buf)
+	    (let ((vec ,data))
+	      (gl.bufferData gl.ARRAY_BUFFER
+			     (,(format
+				nil "new ~aArray" type)
+			       vec)
+			     gl.STATIC_DRAW)))
+
+     ,@body
+				       
+     (do0
+      (gl.enableVertexAttribArray ,loc)
+      (gl.bindBuffer gl.ARRAY_BUFFER ,buf)
+      (let ((size ,(length data))
+	    (type ,gl-type)
+	    (normalize false)
+	    (stride (* ,stride-elements ,(format
+			       nil "~aArray.BYTES_PER_ELEMENT" type)))  
+	    (offset 0))
+	(gl.vertexAttribPointer
+	 ,loc size type normalize stride offset))))))
+
+(progn
   #.(in-package #:cl-cpp-generator)
 
   (defparameter *vertex-shader*
     (cl-cpp-generator::beautify-source
      `(with-compilation-unit
 	  (raw "#version 100")
-	(decl ((,cl-js-generator::name :type "attribute float")))
+	(decl ((uv :type "attribute vec2")
+	       (pos :type "attribute vec2")))
 	(function (main () "void")
-		  (let (((aref uv 4) :type "const vec2"
-			 :init (funcall
-				(aref vec2 4)
-				(funcall (aref vec2 2)  0 0)
-				(funcall (aref vec2 2)  0 1)
-				(funcall (aref vec2 2)  1 1)
-				(funcall (aref vec2 2)  1 0)))
-			((aref pos 4) :type "const vec2"
-			 :init (funcall
-				(aref vec2 4)
-				(funcall (aref vec2 2)  -1 -1)
-				(funcall (aref vec2 2)  -1 1)
-				(funcall (aref vec2 2)  1 1)
-				(funcall (aref vec2 2)  1 -1)))))
-		  (setf gl_Position (funcall vec4  (aref pos index) 0 1)
-			texCoords (aref uv index))))))
+		  (setf gl_Position (funcall vec4 pos 0 1)
+			texCoords uv)))))
 
   (defparameter *fragment-shader*
     (cl-cpp-generator::beautify-source
@@ -172,7 +244,8 @@
 				   (program (create_program gl vertex_shader
 							    fragment_shader)))
 
-				  ,(let* ((type "Float32")
+				  ,(let* ((name "uv")
+					  (type "Float32")
 					  (gl-type "gl.Float")
 					  (dims 1)
 					  (buf (format nil "~a_buffer" name))
