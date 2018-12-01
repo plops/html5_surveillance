@@ -54,7 +54,7 @@
                  :ssl-certificate-file #P"/tmp/server.crt"
 		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 		      ))
-
+;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
 (hunchentoot:start *ssl-acceptor*)
 
 (let ((script-str
@@ -243,6 +243,7 @@
 	      (:script :type "text/javascript"
 		       (princ script-str s)
 		       ))))))
+
 
 
 
