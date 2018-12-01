@@ -75,13 +75,13 @@
     (cl-cpp-generator::beautify-source
      `(with-compilation-unit
 	  (raw "#version 100")
-	(decl (;(uv :type "attribute vec2")
+	(decl ((uv :type "attribute vec2")
 	       (pos :type "attribute vec2")
-	       ;(texCoords :type "varying vec2")
+	       (texCoords :type "varying vec2")
 	       ))
 	(function (main () "void")
 		  (setf gl_Position (funcall vec4 pos 0 1)
-			;texCoords uv
+		       texCoords uv
 			)))))
 
   (defparameter *fragment-shader*
@@ -90,15 +90,15 @@
 	  (raw "#version 100")
 	(raw "precision mediump float;")
 	(decl (
-	       ;(texCoords :type "varying vec2")
+	       (texCoords :type "varying vec2")
 	       (textureSampler :type "uniform sampler2D")))
 	(function (main () "void")
-		  (let ((c :type "mediump vec4" :init (funcall vec4 1 0
+		  (let (#+nil (c :type "mediump vec4" :init (funcall vec4 1 0
 								     ".5" 1))
 			
-			#+nil (textureColor :type vec4 :init (funcall
+			(textureColor :type vec4 :init (funcall
 							      texture2D textureSampler texCoords)))
-		    (setf gl_FragColor c ;textureColor
+		    (setf gl_FragColor textureColor
 			  ))))))
   (format t "~a" *fragment-shader*)
 
@@ -195,7 +195,7 @@
 		  (def gl_error_message (gl e)
 		    (if (!= e gl.NO_ERROR)
 			(statement
-			 (print (string "gl error: "))
+			 (logger (string "gl error: "))
 			 ,@(loop for (err msg) in 
 				 '( ;(gl.NO_ERROR 	"No error has been recorded. The value of this constant is 0.")
 				   (gl.INVALID_ENUM 	"An unacceptable value has been specified for an enumerated argument. The command is ignored and the error flag is set.")
@@ -235,10 +235,10 @@
 				  (logger (string "fill-buffer"))
 				  ,(fill-buffer
 				   "buffer" :data1d
-				   '(list 0 0 ; -1 -1
-				     0 1 ;-1  1
-				     1 1 ; 1  1
-				     1 0 ; 1 -1
+				   '(list 0 0  -1 -1
+				     0 1 -1  1
+				     1 1  1  1
+				     1 0  1 -1
 				     ))
 				  
 
@@ -259,11 +259,12 @@
 						       gl.RGBA gl.UNSIGNED_BYTE
 						       video))
 				  (logger (string "bind-attributes"))
-				  #+nil (statment ,(bind-attribute "uv" :size 2
-								   :stride 4)
-						  (gl_error_message gl (gl.getError)))
+				  ,(bind-attribute "uv" :size 2
+						   :stride
+						   4 :offset 0)
+				  (gl_error_message gl (gl.getError))
 				  ,(bind-attribute "pos" :size 2
-						   :stride 0 :offset 0)
+						   :stride 4 :offset 2)
 				  (gl_error_message gl (gl.getError))
 				  (logger (string "drawArrays .."))
 				  (let ((primitive_type gl.TRIANGLE_FAN)
