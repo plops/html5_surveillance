@@ -340,15 +340,6 @@
 				  ,(bind-attribute "attrib_texCoord" :size 2
 						   :stride
 						   4 :offset 0)
-				  ;(gl.disableVertexAttribArray attrib_texCoord_attribute_location)
-				  
-				  #+nil (gl.texImage2D gl.TEXTURE_2D
-						 0
-						 gl.RGBA
-						 gl.RGBA
-						 gl.UNSIGNED_BYTE
-						 video)
-				  
 				  (requestAnimationFrame
 				   ((lambda () (let-g ((then 0)
 						       (tex (create_texture gl)))
@@ -357,18 +348,18 @@
 							      delta_time (- now_seconds
 									    then)
 							      then now)
-							(if video_arrived_p
-							    (update_texture gl tex video))
-							(gl.bindTexture gl.TEXTURE_2D tex)
-
-					;(logger (string "drawArrays .."))
-							(let ((primitive_type gl.TRIANGLE_FAN)
-							      (offset 0)
-							      (count 4)) ;; number of vertices
-							  (gl.drawArrays primitive_type
-									 offset count)
-							  (gl_error_message gl
-									    (gl.getError)))
+							(if
+							 video_arrived_p
+							 (statement
+							  (update_texture gl tex video)
+							  (gl.bindTexture gl.TEXTURE_2D tex)
+							  (let ((primitive_type gl.TRIANGLE_FAN)
+								(offset 0)
+								(count 4)) ;; number of vertices
+							    (gl.drawArrays primitive_type
+									   offset count)
+							    (gl_error_message gl
+									      (gl.getError)))))
 							(requestAnimationFrame render))
 						      (return render)))))))
 		    )
