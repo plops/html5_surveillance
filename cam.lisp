@@ -374,10 +374,12 @@
 					 (let-g ((then 0)
 						 (tex (create_texture gl)))
 						(def render (now)
-						  (setf now_seconds (* .001)
-							delta_time (- now_seconds
-								      then)
-							then now)
+						  (let-g ((now_seconds (*
+								  now .001))
+						    (delta_time (- now_seconds
+								   then))
+						    ))
+						  (setf then now)
 						  (if
 						   video_arrived_p
 						   (statement
@@ -409,7 +411,7 @@
 							   "c"))
 							 (captureStream
 							  ;; 0=capture when requestFrame is called
-							  ;0
+							  0
 							  ))
 						    5000)
 						   (then
