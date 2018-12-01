@@ -26,8 +26,8 @@
 
 (defun fill-buffer (name &key (type "Float32") data1d (access "gl.STATIC_DRAW")) 
   `(let-g ((,name (gl.createBuffer)))
-	  (gl.bindBuffer gl.ARRAY_BUFFER ,name)
 	  (let ((vec ,data1d))
+	    (gl.bindBuffer gl.ARRAY_BUFFER ,name)
 	    (gl.bufferData gl.ARRAY_BUFFER
 			   (,(format nil "new ~aArray" type)
 			    vec) ,access))))
@@ -35,77 +35,38 @@
 #+nil
 (fill-buffer "buffer" :data1d '(list 1 2 3))
 
-(defun with-attributes (args &rest body)
-  (destructuring-bind (&key (buffer "buffer")
-			    (program "program")
-			    attributes) args
-   (loop for decl in attributes collect
-	(destructuring-bind (name &key
-				  (type "Float32")
-				  (gl-type "gl.Float")
-				  data) decl
-	  (let ((loc (format nil "~a_attribute_location" name)))
-	   `(do0
-	     (let-g ((,loc (gl.getAttribLocation ,program (string
-							   ,name)))))
-	     
-	     ,@body
-	     (do0
-	      (gl.enableVertexAttribArray ,loc)
-	      (gl.bindBuffer gl.ARRAY_BUFFER ,buffer)
-	      (let ((size ,(length data))
-		    (type ,gl-type)
-		    (normalize false)
-		    (stride (* ,(length (elt data 0))
-			       ,(format
-				 nil "~aArray.BYTES_PER_ELEMENT" type)))  
-		    (offset 0))
-		(gl.vertexAttribPointer
-		 ,buffer size type normalize stride offset)))))))))
+(defun bind-attribute (name &key
+			      (type "Float32")
+			      (gl-type "gl.Float")
+			      (offset 0)
+			      (size 1)
+			      (stride 0) ;; in elements
+			      (buffer "buffer")
+			      (program "program")
+			      )
+  (let ((loc (format nil "~a_attribute_location" name)))
+    `(do0
+      (let-g ((,loc (gl.getAttribLocation ,program (string
+						    ,name)))))
+      
+      (do0
+       (gl.enableVertexAttribArray ,loc)
+       (gl.bindBuffer gl.ARRAY_BUFFER ,buffer)
+       (let ((size ,size)
+	     (type ,gl-type)
+	     (normalize false)
+	     (element_size ,(format
+			  nil "~aArray.BYTES_PER_ELEMENT" type))
+	     (stride (* ,stride
+
+			element_size))  
+	     (offset (* ,offset
+			element_size)))
+	 (gl.vertexAttribPointer
+	  ,buffer size type normalize stride offset))))))
 
 #+nil
-(with-attributes '(buffer
-		  ((pos :data '((-1 -1)
-			       (-1 1)
-			       (1 1)
-			       (1 -1)))
-		   (uv :data '((0 0)
-			      (0 1)
-			      (1 1)
-			      (1 0))))))
-
-(defun with-buffer (shader name data &key (type "Float32") (gl-type "gl.Float")
-  (stride-elements 2))
- (let* ((buf (format nil "~a_buffer" shader))
-	(loc (format nil "~a_attribute_location" name)))
-   `(do0
-     (let-g (
-	     (,loc
-	      (gl.getAttribLocation
-	       program (string ,name)))
-	     (,buf (gl.createBuffer)))
-	    (gl.bindBuffer
-	     gl.ARRAY_BUFFER ,buf)
-	    (let ((vec ,data))
-	      (gl.bufferData gl.ARRAY_BUFFER
-			     (,(format
-				nil "new ~aArray" type)
-			       vec)
-			     gl.STATIC_DRAW)))
-
-     ,@body
-				       
-     (do0
-      (gl.enableVertexAttribArray ,loc)
-      (gl.bindBuffer gl.ARRAY_BUFFER ,buf)
-      (let ((size ,(length data))
-	    (type ,gl-type)
-	    (normalize false)
-	    (stride (* ,stride-elements ,(format
-			       nil "~aArray.BYTES_PER_ELEMENT" type)))  
-	    (offset 0))
-	(gl.vertexAttribPointer
-	 ,loc size type normalize stride offset))))))
+(bind-attribute "uv" :size 4 :stride 4)
 
 (progn
   #.(in-package #:cl-cpp-generator)
@@ -115,7 +76,8 @@
      `(with-compilation-unit
 	  (raw "#version 100")
 	(decl ((uv :type "attribute vec2")
-	       (pos :type "attribute vec2")))
+	       (pos :type "attribute vec2")
+	       (texCoords :type "varying vec2")))
 	(function (main () "void")
 		  (setf gl_Position (funcall vec4 pos 0 1)
 			texCoords uv)))))
@@ -221,14 +183,18 @@
 				(logger (gl.getProgramInfoLog program))
 				(gl.deleteProgram program)))))
 		  (def get_context ()
+		    (logger (string "get_context .."))
 		    (let-g ((canvas (document.getElementById (string "c")))
 			    (gl (canvas.getContext (string "webgl"))))
 			   (if (not gl)
-			       (logger (string "no gl available"))
+			       (logger (string "error: no gl available"))
 			       (return gl))))
 		  (def get_video ()
-		    (return (document.getElementById (string "video"))))
+		    (logger (string "get_video .."))
+		    (return (document.getElementById (string
+						      "video"))))
 		  (def startup ()
+		    (logger (string "startup .."))
 		    (let-g ((gl (get_context))
 			    (video (get_video)))
 			   (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
@@ -242,30 +208,18 @@
 									  "2d-fragment-shader"))
 									text)))
 				   (program (create_program gl vertex_shader
-							    fragment_shader)))
+							    fragment_shader))
+				   )
+				  (logger (string "fill-buffer"))
+				  ,(fill-buffer
+				   "buffer" :data1d
+				   '(list 0 0 -1 -1
+				     0 1 -1  1
+				     1 1  1  1
+				     1 0  1 -1))
+				  
 
-				  ,(let* ((name "uv")
-					  (type "Float32")
-					  (gl-type "gl.Float")
-					  (dims 1)
-					  (buf (format nil "~a_buffer" name))
-					  (loc (format nil "~a_attribute_location" name)))
-				     `(do0
-				       (let-g ((,loc
-						(gl.getAttribLocation
-						 program (string ,name)))
-					       (,buf (gl.createBuffer)))
-					      (gl.bindBuffer
-					       gl.ARRAY_BUFFER ,buf)
-					      (let ((vec (list 0 1 2 3)))
-						(gl.bufferData gl.ARRAY_BUFFER
-							       (,(format
-								  nil "new ~aArray" type)
-								 vec)
-							       gl.STATIC_DRAW))
-					      )
-
-				       (do0
+				  (do0
 					;; https://webglfundamentals.org/webgl/lessons/webgl-anti-patterns.html
 					(gl.viewport 0 0
 						     gl.drawingBufferWidth
@@ -274,28 +228,22 @@
 					(gl.clearColor .9 .8 .7 1)
 					(gl.clear gl.COLOR_BUFFER_BIT)
 					(gl.useProgram program)
-					(gl.texImage2D gl.TEXTURE_2D 0
+					#+nil (gl.texImage2D gl.TEXTURE_2D 0
 						       gl.RGBA gl.UNSIGNED_BYTE
 						       video))
-				       (do0
-					(gl.enableVertexAttribArray ,loc)
-					(gl.bindBuffer gl.ARRAY_BUFFER ,buf)
-					(let ((size 1)
-					      (type ,gl-type)
-					      (normalize false)
-					      (stride (* ,dims ,(format
-								 nil "~aArray.BYTES_PER_ELEMENT" type)))  
-					      (offset 0))
-					  (gl.vertexAttribPointer
-					   ,loc size type normalize stride offset)))))
-
+				  (logger (string "bind-attributes"))
+				  ,(bind-attribute "uv" :size 4 :stride 4)
+				  ,(bind-attribute "pos" :size 4
+						  :stride 4 :offset 2)
 				  (let ((primitive_type gl.TRIANGLE_FAN)
 					(offset 0)
 					(count 4))
-				    (gl.drawArrays primitive_type offset count)))
-			   ))
+				    (gl.drawArrays primitive_type offset count))
+				  ))
+		    )
 		  (window.addEventListener (string "load")
-					   startup false)))))
+					     startup false)
+		  ))))
 					;(format t "/home/martin/&~a~%" script-str)
 
     (hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
