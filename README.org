@@ -90,6 +90,7 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://quickref.common-lisp.net/hunchensocket.html
 - chrome://netinternals/#sockets  fine grained reporting in chrome
 - https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation check if we have wifi
+- http://newartisans.com/2007/11/a-quick-hunchentoot-primer/
 
 # Types
 - typescript or eslint with tern.js?

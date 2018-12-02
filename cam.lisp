@@ -1,25 +1,37 @@
 ;; https://common-lisp.net/project/parenscript/tutorial.html
 ;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
-(mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot"
+(mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot" "hunchensocket"
 		       "cl-js-generator" "cl-cpp-generator"))
 
-
+(in-package #:cl-js-generator)
 
 
 (setq cl-who:*attribute-quote-char* #\")
 (setf cl-who::*html-mode* :html5)
 
+(defparameter *wss-port* 7778)
+(defparameter *ssl-port* 7777)
 
+(defvar *wss-acceptor*
+  (make-instance 'hunchensocket:websocket-ssl-acceptor
+		 :name 'wss
+                 :port *wss-port*
+		 :ssl-privatekey-file  #P"/tmp/server.key"
+                 :ssl-certificate-file #P"/tmp/server.crt"
+		 ))
+(hunchentoot:start *wss-acceptor*)
 (defvar *ssl-acceptor*
   (make-instance 'hunchentoot:easy-ssl-acceptor
                  :name 'ssl
-                 :port 7777
+                 :port *ssl-port*
 		 :ssl-privatekey-file  #P"/tmp/server.key"
                  :ssl-certificate-file #P"/tmp/server.crt"
 		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 		      ))
 ;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
 (hunchentoot:start *ssl-acceptor*)
+
+
 
 
 
@@ -32,8 +44,7 @@
 			   (,(format nil "new ~aArray" type)
 			    vec) ,usage-hint))))
 
-#+nil
-(fill-buffer "buffer" :data1d '(list 1 2 3))
+#+nil (fill-buffer "buffer" :data1d '(list 1 2 3))
 
 (defun bind-attribute (name &key
 			      (type "Float32")
@@ -69,8 +80,7 @@
 	 (gl.vertexAttribPointer
 	  ,loc size type normalize stride offset))))))
 
-#+nil
-(bind-attribute "uv" :size 4 :stride 4)
+#+nil (bind-attribute "uv" :size 4 :stride 4)
 (progn
   #.(in-package #:cl-cpp-generator)
 
@@ -324,8 +334,9 @@
 				   (return false)))
 		    (let-g ((url (+ (string "wss://")
 				    ;; alternative:
-				    window.location.host
-				  ;(document.getElementById (string "server-connection"))
+				    ;; window.location.host
+				    (dot (document.getElementById (string "wss-server-connection"))
+					 innerText)
 				  (string "/echo")))
 			    (w ("new WebSocket" url)))
 			   (setf w.onopen
@@ -487,20 +498,39 @@
 					   startup false)
 		  ))))
 					;(format t "/home/martin/&~a~%" script-str)
-
+    (defclass chat-room (hunchensocket:websocket-resource)
+      ((name :initarg :name :initform (error "Name this room!") :reader name)
+       )
+      (:default-initargs :client-class 'user))
+    (defclass user (hunchensocket:websocket-client)
+      ((name :initarg :user-agent :initform (error "Name this user!") :reader name)))
+    (defparameter *chat-rooms* (list (make-instance 'chat-room :name "/echo")))
+    (defun find-room (request)
+      (find (hunchentoot:script-name request)
+	    *chat-rooms*
+	    :test #'string=
+	    :key #'name))
+    (pushnew 'find-room hunchensocket:*websocket-dispatch-table*)
     (hunchentoot:define-easy-handler (securesat :uri "/secure"
 						:acceptor-names '(ssl)) ()
       (cl-who:with-html-output-to-string (s)
 	(:html
 	 (:head (:title "cam"))
 	 (:body (:h2 "camera")
-		(:div :id "server-connection" (princ (hunchentoot:local-addr
+		(:div :id "ssl-dispatch" (princ hunchentoot:*dispatch-table* s))
+		(:div :id "wss-dispatch" (princ hunchensocket:*websocket-dispatch-table* s))
+		(:div :id "ssl-server-connection" (princ (hunchentoot:local-addr
 						 hunchentoot:*request*)
 						s)
 		    ":" (princ (hunchentoot:local-port
 				hunchentoot:*request*)
 			       s))
-		(:div :id "client-connection" (princ (hunchentoot:remote-addr
+		(:div :id "wss-server-connection" (princ (hunchentoot:local-addr
+						 hunchentoot:*request*)
+						s)
+		    ":" (princ *wss-port*
+			       s))
+		(:div :id "ssl-client-connection" (princ (hunchentoot:remote-addr
 						 hunchentoot:*request*)
 						s)
 		    ":" (princ (hunchentoot:remote-port
