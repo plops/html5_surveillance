@@ -322,12 +322,37 @@
 			(statement (logger (string "WebSocket is supported")))
 			(statement (logger (string "Error: WebSocket is not supported"))
 				   (return false)))
+		    (let-g ((url (+ (string "wss://")
+				    ;; alternative:
+				    window.location.host
+				  ;(document.getElementById (string "server-connection"))
+				  (string "/echo")))
+			    (w ("new WebSocket" url)))
+			   (setf w.onopen
+				 (lambda ()
+				   (logger
+				    (string "websocket open")))
+				 w.onmessage
+				 (lambda (e)
+				   (logger (+ (string "websocket received message: ")
+					      e.data)))
+				 w.onclose
+				 (lambda (e)
+				   (logger (+ (string "websocket closed: ")
+					      e.data)))
+				 w.onerror
+				 (lambda (e)
+				   (logger (+ (string "websocket error: ")
+					      e.data))))
+			   (return w))
+		    
 		    )
 		  
 		  (def startup ()
 		    (logger (string "startup .."))
-		    (create_websocket)
-		    (let-g ((gl (get_context))
+		    
+		    (let-g ((ws (create_websocket))
+			    (gl (get_context))
 			    (video (setup_video)))
 			   (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
 								 (dot (document.getElementById
@@ -465,29 +490,37 @@
 
     (hunchentoot:define-easy-handler (securesat :uri "/secure"
 						:acceptor-names '(ssl)) ()
-      (let ((client-address (hunchentoot:remote-addr
-			     hunchentoot:*request*))
-	    (client-port (hunchentoot:remote-port hunchentoot:*request*)))
-       (cl-who:with-html-output-to-string (s)
-	 (:html
-	  (:head (:title "cam"))
-	  (:body (:h2 "camera")
-		 (:p "client connection=" (princ client-address s) ":" (princ
-						client-port s))
-		 (:div :id "log")
-		 (:video :id "player" :controls t :width 320 :height
-			 240 :autoplay t)
-		 (:canvas :id "c" :width 320 :height 240)
-		 (:a  :id "download-button" :class "button" "Download")
-		 (:script :id (string "2d-vertex-shader")  :type "notjs"
-			  (princ  cl-cpp-generator::*vertex-shader*
-				  s))
-		 (:script :id (string "2d-fragment-shader") :type "notjs"
-			  (princ
-			   cl-cpp-generator::*fragment-shader* s))
-		 (:script :type "text/javascript"
-			  (princ script-str s)
-			  ))))))))
+      (cl-who:with-html-output-to-string (s)
+	(:html
+	 (:head (:title "cam"))
+	 (:body (:h2 "camera")
+		(:div :id "server-connection" (princ (hunchentoot:local-addr
+						 hunchentoot:*request*)
+						s)
+		    ":" (princ (hunchentoot:local-port
+				hunchentoot:*request*)
+			       s))
+		(:div :id "client-connection" (princ (hunchentoot:remote-addr
+						 hunchentoot:*request*)
+						s)
+		    ":" (princ (hunchentoot:remote-port
+				hunchentoot:*request*)
+			       s))
+		
+		(:div :id "log")
+		(:video :id "player" :controls t :width 320 :height
+			240 :autoplay t)
+		(:canvas :id "c" :width 320 :height 240)
+		(:a  :id "download-button" :class "button" "Download")
+		(:script :id (string "2d-vertex-shader")  :type "notjs"
+			 (princ  cl-cpp-generator::*vertex-shader*
+				 s))
+		(:script :id (string "2d-fragment-shader") :type "notjs"
+			 (princ
+			  cl-cpp-generator::*fragment-shader* s))
+		(:script :type "text/javascript"
+			 (princ script-str s)
+			 )))))))
 
 
 

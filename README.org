@@ -88,7 +88,8 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://www.html5rocks.com/en/tutorials/webrtc/infrastructure/ signal path EventSource (Server sent event) and XHR; WebSockets
 -  https://dzone.com/refcardz/html5-websocket?chapter=3
 - https://quickref.common-lisp.net/hunchensocket.html
-
+- chrome://netinternals/#sockets  fine grained reporting in chrome
+- https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation check if we have wifi
 
 # Types
 - typescript or eslint with tern.js?
