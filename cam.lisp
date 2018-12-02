@@ -113,10 +113,7 @@
 		              (textureColor :type vec4 :init (funcall
 							      texture2D textureSampler texCoords)))
 		    (setf gl_FragColor textureColor
-			  ))))))
-  (format t "~a" *fragment-shader*)
-
-  
+			  ))))))  
 
   #.(in-package #:cl-js-generator)
 
@@ -551,6 +548,5 @@
 		(:script :type "text/javascript"
 			 (princ script-str s)
 			 )))))))
-
 
 
