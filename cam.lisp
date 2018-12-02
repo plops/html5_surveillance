@@ -1,6 +1,7 @@
 ;; https://common-lisp.net/project/parenscript/tutorial.html
 ;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
-(mapc #'ql:quickload '("cl-fad" "cl-who" "hunchentoot" "hunchensocket"
+(mapc #'ql:quickload '("cl-fad" "cl-who" ; "hunchentoot" "hunchensocket"
+		       "clack" "websocket-driver"
 		       "cl-js-generator" "cl-cpp-generator"))
 
 (in-package #:cl-js-generator)
@@ -14,6 +15,13 @@
 
 (defparameter *wss-port* 7778)
 (defparameter *ssl-port* 7777)
+
+(defun handler (env)
+  '(200 nil ("hello world")))
+
+(defparameter *clack-server* (clack:clackup (lambda (env)
+					      (funcall 'handler env))
+					    :port *ssl-port*))
 
 (defvar *wss-acceptor*
   (make-instance ; 'hunchensocket:websocket-ssl-acceptor
@@ -505,6 +513,7 @@
       (:default-initargs :client-class 'user))
     (defclass user (hunchensocket:websocket-client)
       ((name :initarg :user-agent :initform (error "Name this user!") :reader name)))
+    ;; http://www.websocket.org/echo.html
     (defparameter *chat-rooms* (list (make-instance 'chat-room :name "/echo")))
     (defun find-room (request)
       (format t "find-room ~a" request) 
@@ -513,6 +522,15 @@
 	    :test #'string=
 	    :key #'name))
     (pushnew 'find-room hunchensocket:*websocket-dispatch-table*)
+    (defun broadcast (room message &rest args)
+      (loop for peer in (hunchensocket:clients room) do
+	   (hunchensocket:send-text-message peer (apply #'format nil message args))))
+    (defmethod hunchensocket:client-connected ((room chat-room) user)
+      (broadcast room "~a has joined ~a" (name user) (name room)))
+    (defmethod hunchensocket:client-disconnected ((room chat-room) user)
+      (broadcast room "~a has left ~a" (name user) (name room)))
+    (defmethod hunchensocket:text-message-received ((room chat-room) user message)
+      (broadcast room "~a says ~a" (name user) message))
     (hunchentoot:define-easy-handler (securesat :uri "/secure"
 						:acceptor-names '(ssl)) ()
       (cl-who:with-html-output-to-string (s)

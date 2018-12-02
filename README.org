@@ -122,3 +122,7 @@ Brazil 2016)
 - host, STUN (serve reflexive), TURN (relay), TURNS (relay over TLS TCP)
 - ICE process figures out how to connect the peers
 - CPaaS provider (communication platform as a service)
+
+
+# Authentification
+- https://github.com/slyrus/hunchentoot-auth
