@@ -1,6 +1,6 @@
 ;; https://common-lisp.net/project/parenscript/tutorial.html
 ;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
-(mapc #'ql:quickload '("cl-fad" "cl-who" ; "hunchentoot" "hunchensocket"
+(mapc #'ql:quickload '("cl-fad" "cl-who" 
 		       "clack" "websocket-driver"
 		       "cl-js-generator" "cl-cpp-generator"))
 
@@ -21,9 +21,21 @@
 
 (defparameter *clack-server* (clack:clackup (lambda (env)
 					      (funcall 'handler env))
-					    :port *ssl-port*))
+					    :port *ssl-port*
+					     :use-default-middlewares nil))
 
 
+
+(defparameter *echo-server*
+  (lambda (env)
+    (let ((ws (websocket-driver:make-server env )))
+      (websocket-driver:on :message ws
+			   (lambda (message) (websocket-driver:send ws message)))
+      (lambda (responder)
+	(websocket-driver:start-connection ws)))))
+
+
+(clack:clackup *echo-server* :port *wss-port*)
 
 ;; (defvar *wss-acceptor*
 ;;   (make-instance ; 'hunchensocket:websocket-ssl-acceptor
@@ -510,52 +522,36 @@
 		  ))))
     (defun handler (env)
       ;;hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
-      
-      `(200 nil
-	(,(cl-who:with-html-output-to-string (s)
-	    (cl-who:htm
-	     (:html
-	      (:head (:title "cam"))
-	      (:body (:h2 "camera")
-		     ;(:div :id "ssl-dispatch" (princ hunchentoot:*dispatch-table* s))
-		     ;(:div :id "wss-dispatch" (princ hunchensocket:*websocket-dispatch-table* s))
-		     #+nil(:div :id "ssl-server-connection" (princ (hunchentoot:local-addr
-							       hunchentoot:*request*)
-							      s)
-			   ":" (princ (hunchentoot:local-port
-				       hunchentoot:*request*)
-				      s))
-		     (:div :id "wss-server-connection" (princ "localhost"
-							      s)
-			   ":" (princ *wss-port*
-				      s))
-		     #+nil (:a :href		;"https://localhost:7778"
-			 (format nil "https://~a:~a/"
-				 (hunchentoot:local-addr
-				  hunchentoot:*request*)
-				 *wss-port*
-				 )
-			 "accept secure websocket cert here")
-		     (:div :id "ssl-client-connection" (princ (hunchentoot:remote-addr
-							       hunchentoot:*request*)
-							      s)
-			   ":" (princ (hunchentoot:remote-port
-				       hunchentoot:*request*)
-				      s))
-		
-		     (:div :id "log")
-		     (:video :id "player" :controls t :width 320 :height
-			     240 :autoplay t)
-		     (:canvas :id "c" :width 320 :height 240)
-		     (:a  :id "download-button" :class "button" "Download")
-		     (:script :id (string "2d-vertex-shader")  :type "notjs"
-			      (princ  cl-cpp-generator::*vertex-shader*
-				      s))
-		     (:script :id (string "2d-fragment-shader") :type "notjs"
-			      (princ
-			       cl-cpp-generator::*fragment-shader* s))
-		     (:script :type "text/javascript"
-			      (princ script-str s)
-			      ))))))))))
+      (destructuring-bind (&key server-name &allow-other-keys) env
+       `(200 nil
+	     (,(cl-who:with-html-output-to-string (s)
+		 (cl-who:htm
+		  (:html
+		   (:head (:title "cam"))
+		   (:body (:h2 "camera")
+			  (:p (princ (format nil "~a" env) s))
+			  (:div :id "wss-server-connection"
+				(princ (format nil "~a:~a"
+					     (or server-name "localhost")
+					     *wss-port*) s))
+			  (:a :href (princ (format nil "https://~a:~a/"
+					     (or server-name "localhost")
+					     *wss-port*) s)
+				    "accept secure websocket cert here")
+			  
+			  (:div :id "log")
+			  (:video :id "player" :controls t :width 320 :height
+				  240 :autoplay t)
+			  (:canvas :id "c" :width 320 :height 240)
+			  (:a  :id "download-button" :class "button" "Download")
+			  (:script :id (string "2d-vertex-shader")  :type "notjs"
+				   (princ  cl-cpp-generator::*vertex-shader*
+					   s))
+			  (:script :id (string "2d-fragment-shader") :type "notjs"
+				   (princ
+				    cl-cpp-generator::*fragment-shader* s))
+			  (:script :type "text/javascript"
+				   (princ script-str s)
+				   )))))))))))
 
 
