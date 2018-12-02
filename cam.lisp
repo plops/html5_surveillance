@@ -9,15 +9,19 @@
 (setq cl-who:*attribute-quote-char* #\")
 (setf cl-who::*html-mode* :html5)
 
+;; for development in firefox:
+;; about:config network.websocket.allowInsecureFromHTTPS true
+
 (defparameter *wss-port* 7778)
 (defparameter *ssl-port* 7777)
 
 (defvar *wss-acceptor*
-  (make-instance 'hunchensocket:websocket-ssl-acceptor
+  (make-instance ; 'hunchensocket:websocket-ssl-acceptor
+		 'hunchensocket:websocket-acceptor
 		 :name 'wss
                  :port *wss-port*
-		 :ssl-privatekey-file  #P"/tmp/server.key"
-                 :ssl-certificate-file #P"/tmp/server.crt"
+		 ;:ssl-privatekey-file  #P"/tmp/server.key"
+                 ;:ssl-certificate-file #P"/tmp/server.crt"
 		 ))
 (hunchentoot:start *wss-acceptor*)
 (defvar *ssl-acceptor*
@@ -44,7 +48,7 @@
 			   (,(format nil "new ~aArray" type)
 			    vec) ,usage-hint))))
 
-#+nil (fill-buffer "buffer" :data1d '(list 1 2 3))
+; (fill-buffer "buffer" :data1d '(list 1 2 3))
 
 (defun bind-attribute (name &key
 			      (type "Float32")
@@ -80,7 +84,7 @@
 	 (gl.vertexAttribPointer
 	  ,loc size type normalize stride offset))))))
 
-#+nil (bind-attribute "uv" :size 4 :stride 4)
+; (bind-attribute "uv" :size 4 :stride 4)
 (progn
   #.(in-package #:cl-cpp-generator)
 
@@ -329,7 +333,7 @@
 			(statement (logger (string "WebSocket is supported")))
 			(statement (logger (string "Error: WebSocket is not supported"))
 				   (return false)))
-		    (let-g ((url (+ (string "wss://")
+		    (let-g ((url (+ (string "ws://")
 				    ;; alternative:
 				    ;; window.location.host
 				    (dot (document.getElementById (string "wss-server-connection"))
@@ -503,6 +507,7 @@
       ((name :initarg :user-agent :initform (error "Name this user!") :reader name)))
     (defparameter *chat-rooms* (list (make-instance 'chat-room :name "/echo")))
     (defun find-room (request)
+      (format t "find-room ~a" request)
       (find (hunchentoot:script-name request)
 	    *chat-rooms*
 	    :test #'string=
@@ -511,42 +516,50 @@
     (hunchentoot:define-easy-handler (securesat :uri "/secure"
 						:acceptor-names '(ssl)) ()
       (cl-who:with-html-output-to-string (s)
-	(:html
-	 (:head (:title "cam"))
-	 (:body (:h2 "camera")
-		(:div :id "ssl-dispatch" (princ hunchentoot:*dispatch-table* s))
-		(:div :id "wss-dispatch" (princ hunchensocket:*websocket-dispatch-table* s))
-		(:div :id "ssl-server-connection" (princ (hunchentoot:local-addr
-						 hunchentoot:*request*)
-						s)
-		    ":" (princ (hunchentoot:local-port
-				hunchentoot:*request*)
-			       s))
-		(:div :id "wss-server-connection" (princ (hunchentoot:local-addr
-						 hunchentoot:*request*)
-						s)
-		    ":" (princ *wss-port*
-			       s))
-		(:div :id "ssl-client-connection" (princ (hunchentoot:remote-addr
-						 hunchentoot:*request*)
-						s)
-		    ":" (princ (hunchentoot:remote-port
-				hunchentoot:*request*)
-			       s))
+	(cl-who:htm
+	 (:html
+	  (:head (:title "cam"))
+	  (:body (:h2 "camera")
+		 (:div :id "ssl-dispatch" (princ hunchentoot:*dispatch-table* s))
+		 (:div :id "wss-dispatch" (princ hunchensocket:*websocket-dispatch-table* s))
+		 (:div :id "ssl-server-connection" (princ (hunchentoot:local-addr
+							   hunchentoot:*request*)
+							  s)
+		       ":" (princ (hunchentoot:local-port
+				   hunchentoot:*request*)
+				  s))
+		 (:div :id "wss-server-connection" (princ (hunchentoot:local-addr
+							   hunchentoot:*request*)
+							  s)
+		       ":" (princ *wss-port*
+				  s))
+		 (:a :href ;"https://localhost:7778"
+		     (format nil "https://~a:~a/"
+				 (hunchentoot:local-addr
+				  hunchentoot:*request*)
+				 *wss-port*
+				 )
+		     "accept secure websocket cert here")
+		 (:div :id "ssl-client-connection" (princ (hunchentoot:remote-addr
+							   hunchentoot:*request*)
+							  s)
+		       ":" (princ (hunchentoot:remote-port
+				   hunchentoot:*request*)
+				  s))
 		
-		(:div :id "log")
-		(:video :id "player" :controls t :width 320 :height
-			240 :autoplay t)
-		(:canvas :id "c" :width 320 :height 240)
-		(:a  :id "download-button" :class "button" "Download")
-		(:script :id (string "2d-vertex-shader")  :type "notjs"
-			 (princ  cl-cpp-generator::*vertex-shader*
-				 s))
-		(:script :id (string "2d-fragment-shader") :type "notjs"
-			 (princ
-			  cl-cpp-generator::*fragment-shader* s))
-		(:script :type "text/javascript"
-			 (princ script-str s)
-			 )))))))
+		 (:div :id "log")
+		 (:video :id "player" :controls t :width 320 :height
+			 240 :autoplay t)
+		 (:canvas :id "c" :width 320 :height 240)
+		 (:a  :id "download-button" :class "button" "Download")
+		 (:script :id (string "2d-vertex-shader")  :type "notjs"
+			  (princ  cl-cpp-generator::*vertex-shader*
+				  s))
+		 (:script :id (string "2d-fragment-shader") :type "notjs"
+			  (princ
+			   cl-cpp-generator::*fragment-shader* s))
+		 (:script :type "text/javascript"
+			  (princ script-str s)
+			  ))))))))
 
 
