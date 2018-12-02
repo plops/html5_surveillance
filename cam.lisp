@@ -23,25 +23,27 @@
 					      (funcall 'handler env))
 					    :port *ssl-port*))
 
-(defvar *wss-acceptor*
-  (make-instance ; 'hunchensocket:websocket-ssl-acceptor
-		 'hunchensocket:websocket-acceptor
-		 :name 'wss
-                 :port *wss-port*
-		 ;:ssl-privatekey-file  #P"/tmp/server.key"
-                 ;:ssl-certificate-file #P"/tmp/server.crt"
-		 ))
-(hunchentoot:start *wss-acceptor*)
-(defvar *ssl-acceptor*
-  (make-instance 'hunchentoot:easy-ssl-acceptor
-                 :name 'ssl
-                 :port *ssl-port*
-		 :ssl-privatekey-file  #P"/tmp/server.key"
-                 :ssl-certificate-file #P"/tmp/server.crt"
-		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
-		      ))
-;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
-(hunchentoot:start *ssl-acceptor*)
+
+
+;; (defvar *wss-acceptor*
+;;   (make-instance ; 'hunchensocket:websocket-ssl-acceptor
+;; 		 'hunchensocket:websocket-acceptor
+;; 		 :name 'wss
+;;                  :port *wss-port*
+;; 		 ;:ssl-privatekey-file  #P"/tmp/server.key"
+;;                  ;:ssl-certificate-file #P"/tmp/server.crt"
+;; 		 ))
+;; (hunchentoot:start *wss-acceptor*)
+;; (defvar *ssl-acceptor*
+;;   (make-instance 'hunchentoot:easy-ssl-acceptor
+;;                  :name 'ssl
+;;                  :port *ssl-port*
+;; 		 :ssl-privatekey-file  #P"/tmp/server.key"
+;;                  :ssl-certificate-file #P"/tmp/server.crt"
+;; 		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
+;; 		      ))
+;; ;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
+;; (hunchentoot:start *ssl-acceptor*)
 
 
 
@@ -506,78 +508,54 @@
 		  (window.addEventListener (string "load")
 					   startup false)
 		  ))))
-					;(format t "/home/martin/&~a~%" script-str)
-    (defclass chat-room (hunchensocket:websocket-resource)
-      ((name :initarg :name :initform (error "Name this room!") :reader name)
-       )
-      (:default-initargs :client-class 'user))
-    (defclass user (hunchensocket:websocket-client)
-      ((name :initarg :user-agent :initform (error "Name this user!") :reader name)))
-    ;; http://www.websocket.org/echo.html
-    (defparameter *chat-rooms* (list (make-instance 'chat-room :name "/echo")))
-    (defun find-room (request)
-      (format t "find-room ~a" request) 
-      (find (hunchentoot:script-name request)
-	    *chat-rooms*
-	    :test #'string=
-	    :key #'name))
-    (pushnew 'find-room hunchensocket:*websocket-dispatch-table*)
-    (defun broadcast (room message &rest args)
-      (loop for peer in (hunchensocket:clients room) do
-	   (hunchensocket:send-text-message peer (apply #'format nil message args))))
-    (defmethod hunchensocket:client-connected ((room chat-room) user)
-      (broadcast room "~a has joined ~a" (name user) (name room)))
-    (defmethod hunchensocket:client-disconnected ((room chat-room) user)
-      (broadcast room "~a has left ~a" (name user) (name room)))
-    (defmethod hunchensocket:text-message-received ((room chat-room) user message)
-      (broadcast room "~a says ~a" (name user) message))
-    (hunchentoot:define-easy-handler (securesat :uri "/secure"
-						:acceptor-names '(ssl)) ()
-      (cl-who:with-html-output-to-string (s)
-	(cl-who:htm
-	 (:html
-	  (:head (:title "cam"))
-	  (:body (:h2 "camera")
-		 (:div :id "ssl-dispatch" (princ hunchentoot:*dispatch-table* s))
-		 (:div :id "wss-dispatch" (princ hunchensocket:*websocket-dispatch-table* s))
-		 (:div :id "ssl-server-connection" (princ (hunchentoot:local-addr
-							   hunchentoot:*request*)
-							  s)
-		       ":" (princ (hunchentoot:local-port
-				   hunchentoot:*request*)
-				  s))
-		 (:div :id "wss-server-connection" (princ (hunchentoot:local-addr
-							   hunchentoot:*request*)
-							  s)
-		       ":" (princ *wss-port*
-				  s))
-		 (:a :href ;"https://localhost:7778"
-		     (format nil "https://~a:~a/"
+    (defun handler (env)
+      ;;hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
+      
+      `(200 nil
+	(,(cl-who:with-html-output-to-string (s)
+	    (cl-who:htm
+	     (:html
+	      (:head (:title "cam"))
+	      (:body (:h2 "camera")
+		     ;(:div :id "ssl-dispatch" (princ hunchentoot:*dispatch-table* s))
+		     ;(:div :id "wss-dispatch" (princ hunchensocket:*websocket-dispatch-table* s))
+		     #+nil(:div :id "ssl-server-connection" (princ (hunchentoot:local-addr
+							       hunchentoot:*request*)
+							      s)
+			   ":" (princ (hunchentoot:local-port
+				       hunchentoot:*request*)
+				      s))
+		     (:div :id "wss-server-connection" (princ "localhost"
+							      s)
+			   ":" (princ *wss-port*
+				      s))
+		     #+nil (:a :href		;"https://localhost:7778"
+			 (format nil "https://~a:~a/"
 				 (hunchentoot:local-addr
 				  hunchentoot:*request*)
 				 *wss-port*
 				 )
-		     "accept secure websocket cert here")
-		 (:div :id "ssl-client-connection" (princ (hunchentoot:remote-addr
-							   hunchentoot:*request*)
-							  s)
-		       ":" (princ (hunchentoot:remote-port
-				   hunchentoot:*request*)
-				  s))
+			 "accept secure websocket cert here")
+		     (:div :id "ssl-client-connection" (princ (hunchentoot:remote-addr
+							       hunchentoot:*request*)
+							      s)
+			   ":" (princ (hunchentoot:remote-port
+				       hunchentoot:*request*)
+				      s))
 		
-		 (:div :id "log")
-		 (:video :id "player" :controls t :width 320 :height
-			 240 :autoplay t)
-		 (:canvas :id "c" :width 320 :height 240)
-		 (:a  :id "download-button" :class "button" "Download")
-		 (:script :id (string "2d-vertex-shader")  :type "notjs"
-			  (princ  cl-cpp-generator::*vertex-shader*
-				  s))
-		 (:script :id (string "2d-fragment-shader") :type "notjs"
-			  (princ
-			   cl-cpp-generator::*fragment-shader* s))
-		 (:script :type "text/javascript"
-			  (princ script-str s)
-			  ))))))))
+		     (:div :id "log")
+		     (:video :id "player" :controls t :width 320 :height
+			     240 :autoplay t)
+		     (:canvas :id "c" :width 320 :height 240)
+		     (:a  :id "download-button" :class "button" "Download")
+		     (:script :id (string "2d-vertex-shader")  :type "notjs"
+			      (princ  cl-cpp-generator::*vertex-shader*
+				      s))
+		     (:script :id (string "2d-fragment-shader") :type "notjs"
+			      (princ
+			       cl-cpp-generator::*fragment-shader* s))
+		     (:script :type "text/javascript"
+			      (princ script-str s)
+			      ))))))))))
 
 
