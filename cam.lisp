@@ -22,8 +22,7 @@
 (defparameter *clack-server* (clack:clackup (lambda (env)
 					      (funcall 'handler env))
 					    :port *ssl-port*
-					    :ssl t
-					    :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
+					    :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
 					     :use-default-middlewares nil))
 
 ;; 		 :ssl-privatekey-file  #P"/tmp/server.key" :ssl-certificate-file #P"/tmp/server.crt"
@@ -39,7 +38,8 @@
 	(websocket-driver:start-connection ws)))))
 
 
-(clack:clackup *echo-server* :port *wss-port*)
+(clack:clackup *echo-server* :port *wss-port*
+	       :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt")
 
 ;; (defvar *wss-acceptor*
 ;;   (make-instance ; 'hunchensocket:websocket-ssl-acceptor
@@ -357,7 +357,7 @@
 			(statement (logger (string "WebSocket is supported")))
 			(statement (logger (string "Error: WebSocket is not supported"))
 				   (return false)))
-		    (let-g ((url (+ (string "ws://")
+		    (let-g ((url (+ (string "wss://")
 				    ;; alternative:
 				    ;; window.location.host
 				    (dot (document.getElementById (string "wss-server-connection"))
@@ -536,9 +536,9 @@
 				(princ (format nil "~a:~a"
 					     (or server-name "localhost")
 					     *wss-port*) s))
-			  (:a :href (princ (format nil "https://~a:~a/"
-					     (or server-name "localhost")
-					     *wss-port*) s)
+			  (:a :href (format nil "https://~a:~a/"
+					    (or server-name "localhost")
+					    *wss-port*)
 				    "accept secure websocket cert here")
 			  
 			  (:div :id "log")
