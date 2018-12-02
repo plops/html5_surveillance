@@ -22,9 +22,13 @@
 (defparameter *clack-server* (clack:clackup (lambda (env)
 					      (funcall 'handler env))
 					    :port *ssl-port*
+					    :ssl t
+					    :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
 					     :use-default-middlewares nil))
 
+;; 		 :ssl-privatekey-file  #P"/tmp/server.key" :ssl-certificate-file #P"/tmp/server.crt"
 
+;; 		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 
 (defparameter *echo-server*
   (lambda (env)
@@ -42,8 +46,6 @@
 ;; 		 'hunchensocket:websocket-acceptor
 ;; 		 :name 'wss
 ;;                  :port *wss-port*
-;; 		 ;:ssl-privatekey-file  #P"/tmp/server.key"
-;;                  ;:ssl-certificate-file #P"/tmp/server.crt"
 ;; 		 ))
 ;; (hunchentoot:start *wss-acceptor*)
 ;; (defvar *ssl-acceptor*
@@ -52,7 +54,7 @@
 ;;                  :port *ssl-port*
 ;; 		 :ssl-privatekey-file  #P"/tmp/server.key"
 ;;                  :ssl-certificate-file #P"/tmp/server.crt"
-;; 		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
+
 ;; 		      ))
 ;; ;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
 ;; (hunchentoot:start *ssl-acceptor*)
