@@ -507,7 +507,7 @@
       ((name :initarg :user-agent :initform (error "Name this user!") :reader name)))
     (defparameter *chat-rooms* (list (make-instance 'chat-room :name "/echo")))
     (defun find-room (request)
-      (format t "find-room ~a" request)
+      (format t "find-room ~a" request) 
       (find (hunchentoot:script-name request)
 	    *chat-rooms*
 	    :test #'string=
