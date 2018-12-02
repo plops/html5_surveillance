@@ -316,9 +316,17 @@
 					       (then (lambda () (return data))))))
 			   ))
 
+
+		  (def create_websocket ()
+		    (if window.WebSocket
+			(statement (logger (string "WebSocket is supported")))
+			(statement (logger (string "Error: WebSocket is not supported"))
+				   (return false)))
+		    )
 		  
 		  (def startup ()
 		    (logger (string "startup .."))
+		    (create_websocket)
 		    (let-g ((gl (get_context))
 			    (video (setup_video)))
 			   (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
@@ -457,12 +465,15 @@
 
     (hunchentoot:define-easy-handler (securesat :uri "/secure"
 						:acceptor-names '(ssl)) ()
-      (let ((client-address (hunchentoot:remote-addr hunchentoot:*request*)))
+      (let ((client-address (hunchentoot:remote-addr
+			     hunchentoot:*request*))
+	    (client-port (hunchentoot:remote-port hunchentoot:*request*)))
        (cl-who:with-html-output-to-string (s)
 	 (:html
 	  (:head (:title "cam"))
 	  (:body (:h2 "camera")
-		 (:p "client adress="(princ client-address s))
+		 (:p "client connection=" (princ client-address s) ":" (princ
+						client-port s))
 		 (:div :id "log")
 		 (:video :id "player" :controls t :width 320 :height
 			 240 :autoplay t)

@@ -82,6 +82,13 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Taking_still_photos
 - https://github.com/samdutton/simpl/blob/gh-pages/rtcpeerconnection/js/main.js
 - https://www.html5rocks.com/en/tutorials/webrtc/basics/
+- https://webcamtoy.com/app/ these shaders seem to remember the images
+- https://gist.github.com/zziuni/3741933 a list of STUN servers
+- about:webrtc information about sessions in firefox
+- https://www.html5rocks.com/en/tutorials/webrtc/infrastructure/ signal path EventSource (Server sent event) and XHR; WebSockets
+-  https://dzone.com/refcardz/html5-websocket?chapter=3
+- https://quickref.common-lisp.net/hunchensocket.html
+
 
 # Types
 - typescript or eslint with tern.js?
