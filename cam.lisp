@@ -27,14 +27,19 @@
 ;; :ssl-key-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"  :ssl-cert-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 
 (defun ws-handler (env)
-  (destructuring-bind (&key request-uri remote-addr remote-port content-type content-length &allow-other-keys)
-      env
-    (let ((ws (websocket-driver:make-server env)))
-      (event-emitter:on :message ws
-			(lambda (message)
-			  (websocket-driver:send ws message)))
-      (lambda (responder)
-	(websocket-driver:start-connection ws)))))
+  (handler-case 
+   (destructuring-bind (&key request-uri remote-addr remote-port content-type content-length &allow-other-keys)
+       env
+     (format t "ws-handler: ~a" env)
+     (let ((ws (websocket-driver:make-server env)))
+       (event-emitter:on :message ws
+			 (lambda (message)
+			   (websocket-driver:send ws message)))
+       (lambda (responder)
+	 (websocket-driver:start-connection ws))))
+    (condition ()
+      (format t "This connection wants websocket protocol!")
+      `(404 nil ("This connection wants websocket protocol!")))))
 
 
 
