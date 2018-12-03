@@ -362,6 +362,10 @@
 
 
 		  (def create_websocket ()
+		    (if navigator.onLine
+			(statement (logger (string "You are online!")))
+			(statement (logger (string "You are offline!"))
+				   (return false)))
 		    (if window.WebSocket
 			(statement (logger (string "WebSocket is supported")))
 			(statement (logger (string "Error: WebSocket is not supported"))
@@ -388,8 +392,19 @@
 				 w.onclose
 				 (lambda (e)
 				   (logger (+ (string "websocket closed: ")
-					      e.data)))
-				 w.onerror
+					      e.data))
+				   (if (!= 1000 e.code)
+				       (statement
+					;; in order to protect browser users this error message is vague according to the w3c websocket standard
+					(if (== 1006 code)
+					    (logger (string "websocket: probably authentication error, check your javascript console!")))
+					(logger (+ (string "websocket connection was not closed normally! code=")
+						   e.code
+						   (string " reason=")
+						   e.reason))
+					(if (not navigator.onLine)
+					    (logger (string "websocket: You are offline!"))))))
+				 w.onerror ;; always followed by close
 				 (lambda (e)
 				   (logger (+ (string "websocket error: ")
 					      e.data))))
