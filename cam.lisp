@@ -24,6 +24,7 @@
 			      :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
 			      :use-default-middlewares nil))
 
+;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
 ;; :ssl-key-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"  :ssl-cert-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 
 (defun ws-handler (env)
@@ -49,29 +50,6 @@
  :port *wss-port*
  :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
  :use-default-middlewares nil)
-
-;; (defvar *wss-acceptor*
-;;   (make-instance ; 'hunchensocket:websocket-ssl-acceptor
-;; 		 'hunchensocket:websocket-acceptor
-;; 		 :name 'wss
-;;                  :port *wss-port*
-;; 		 ))
-;; (hunchentoot:start *wss-acceptor*)
-;; (defvar *ssl-acceptor*
-;;   (make-instance 'hunchentoot:easy-ssl-acceptor
-;;                  :name 'ssl
-;;                  :port *ssl-port*
-;; 		 :ssl-privatekey-file  #P"/tmp/server.key"
-;;                  :ssl-certificate-file #P"/tmp/server.crt"
-
-;; 		      ))
-;; ;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
-;; (hunchentoot:start *ssl-acceptor*)
-
-
-
-
-
 
 (defun fill-buffer (name &key (type "Float32") data1d (usage-hint "gl.STATIC_DRAW")) 
   `(let-g ((,name (gl.createBuffer)))
@@ -553,8 +531,7 @@
 					   startup false)
 		  ))))
     (defun handler (env)
-      ;;hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
-      (destructuring-bind (&key server-name remote-name remote-port &allow-other-keys) env
+      (destructuring-bind (&key server-name remote-addr remote-port &allow-other-keys) env
        `(200 (:content-type "text/html; charset=utf-8")
 	     (,(cl-who:with-html-output-to-string (s)
 		 (cl-who:htm
@@ -570,11 +547,11 @@
 			  (:p (princ (format nil "~a" env) s))
 			  (:div :id "wss-server-connection"
 				(princ (format nil "~a:~a"
-					     (or server-name "localhost")
+					     "192.168.2.147"
 					     *wss-port*) s))
 			  (:div :id "ssl-client-connection"
 				(princ (format nil "~a:~a"
-					     (or remote-name "localhost")
+					     (or remote-addr "localhost")
 					     remote-port) s))
 			  
 			  (:a :href (format nil "https://~a:~a/"
