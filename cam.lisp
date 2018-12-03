@@ -535,7 +535,7 @@
     (defun handler (env)
       ;;hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
       (destructuring-bind (&key server-name remote-name remote-port &allow-other-keys) env
-       `(200 (:content-type "text/html")
+       `(200 (:content-type "text/html; charset=utf-8")
 	     (,(cl-who:with-html-output-to-string (s)
 		 (cl-who:htm
 		  (:html
