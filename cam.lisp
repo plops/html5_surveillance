@@ -31,15 +31,17 @@
   (handler-case 
    (destructuring-bind (&key request-uri remote-addr remote-port content-type content-length &allow-other-keys)
        env
-     (format t "ws-handler: ~a" env)
+     (format t "ws-handler: ~a~%" env)
      (let ((ws (websocket-driver:make-server env)))
        (event-emitter:on :message ws
 			 (lambda (message)
+			   (format t "ws-handler received: ~a~%" message)
 			   (websocket-driver:send ws message)))
        (lambda (responder)
+	 (format t "ws-handler: start connection ~a~%" responder) 
 	 (websocket-driver:start-connection ws))))
     (condition ()
-      (format t "This connection wants websocket protocol!")
+      (format t "This connection wants websocket protocol!~%")
       `(404 nil ("This connection wants websocket protocol!")))))
 
 
