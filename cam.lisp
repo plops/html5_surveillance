@@ -2,7 +2,8 @@
 ;; https://www.html5rocks.com/en/tutorials/getusermedia/intro/
 (mapc #'ql:quickload '("cl-fad" "cl-who" 
 		       "clack" "websocket-driver"
-		       "cl-js-generator" "cl-cpp-generator"))
+		       "cl-js-generator" "cl-cpp-generator"
+		       "event-emitter"))
 
 (in-package #:cl-js-generator)
 
@@ -10,36 +11,39 @@
 (setq cl-who:*attribute-quote-char* #\")
 (setf cl-who::*html-mode* :html5)
 
-;; for development in firefox:
-;; about:config network.websocket.allowInsecureFromHTTPS true
-
 (defparameter *wss-port* 7778)
 (defparameter *ssl-port* 7777)
 
 (defun handler (env)
   '(200 nil ("hello world")))
 
-(defparameter *clack-server* (clack:clackup (lambda (env)
-					      (funcall 'handler env))
-					    :port *ssl-port*
-					    :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
-					     :use-default-middlewares nil))
+(defparameter *clack-server* (clack:clackup
+			      (lambda (env)
+				(funcall 'handler env))
+			      :port *ssl-port*
+			      :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
+			      :use-default-middlewares nil))
 
-;; 		 :ssl-privatekey-file  #P"/tmp/server.key" :ssl-certificate-file #P"/tmp/server.crt"
+;; :ssl-key-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"  :ssl-cert-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 
-;; 		 ;:ssl-privatekey-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"	 :ssl-certificate-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
-
-(defparameter *echo-server*
-  (lambda (env)
-    (let ((ws (websocket-driver:make-server env )))
-      (websocket-driver:on :message ws
-			   (lambda (message) (websocket-driver:send ws message)))
+(defun ws-handler (env)
+  (destructuring-bind (&key request-uri remote-addr remote-port content-type content-length &allow-other-keys)
+      env
+    (let ((ws (websocket-driver:make-server env)))
+      (event-emitter:on :message ws
+			(lambda (message)
+			  (websocket-driver:send ws message)))
       (lambda (responder)
 	(websocket-driver:start-connection ws)))))
 
 
-(clack:clackup *echo-server* :port *wss-port*
-	       :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt")
+
+(clack:clackup
+ (lambda (env)
+   (funcall 'ws-handler env))
+ :port *wss-port*
+ :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
+ :use-default-middlewares nil)
 
 ;; (defvar *wss-acceptor*
 ;;   (make-instance ; 'hunchensocket:websocket-ssl-acceptor
@@ -362,10 +366,14 @@
 				    ;; window.location.host
 				    (dot (document.getElementById (string "wss-server-connection"))
 					 innerText)
-				  (string "/echo")))
+				  (string "/")))
 			    (w ("new WebSocket" url)))
 			   (setf w.onopen
 				 (lambda ()
+				   (w.send (+ (string "{startup: '")
+							  (dot (document.getElementById (string "ssl-client-connection"))
+							       innerText)
+							  (string "'}")))
 				   (logger
 				    (string "websocket open")))
 				 w.onmessage
@@ -390,6 +398,7 @@
 		    (let-g ((ws (create_websocket))
 			    (gl (get_context))
 			    (video (setup_video)))
+			   
 			   (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
 								 (dot (document.getElementById
 								       (string
@@ -484,6 +493,7 @@
 					     (statement
 					      (setf is_recording_p true)
 					      (logger (string "start recording"))
+					      
 					      (dot (recording_start
 						    (dot (document.getElementById
 							  (string
@@ -524,28 +534,36 @@
 		  ))))
     (defun handler (env)
       ;;hunchentoot:define-easy-handler (securesat :uri "/secure" :acceptor-names '(ssl)) ()
-      (destructuring-bind (&key server-name &allow-other-keys) env
-       `(200 nil
+      (destructuring-bind (&key server-name remote-name remote-port &allow-other-keys) env
+       `(200 (:content-type "text/html")
 	     (,(cl-who:with-html-output-to-string (s)
 		 (cl-who:htm
 		  (:html
 		   (:head (:title "cam"))
 		   (:body (:h2 "camera")
+			  (:div
+			   (:video :id "player" :controls t :width 320 :height
+				   240 :autoplay t)
+			   (:canvas :id "c" :width 320 :height 240)
+			   (:a  :id "download-button" :class "button" "Download"))
+
 			  (:p (princ (format nil "~a" env) s))
 			  (:div :id "wss-server-connection"
 				(princ (format nil "~a:~a"
 					     (or server-name "localhost")
 					     *wss-port*) s))
+			  (:div :id "ssl-client-connection"
+				(princ (format nil "~a:~a"
+					     (or remote-name "localhost")
+					     remote-port) s))
+			  
 			  (:a :href (format nil "https://~a:~a/"
 					    (or server-name "localhost")
 					    *wss-port*)
 				    "accept secure websocket cert here")
 			  
 			  (:div :id "log")
-			  (:video :id "player" :controls t :width 320 :height
-				  240 :autoplay t)
-			  (:canvas :id "c" :width 320 :height 240)
-			  (:a  :id "download-button" :class "button" "Download")
+			  
 			  (:script :id (string "2d-vertex-shader")  :type "notjs"
 				   (princ  cl-cpp-generator::*vertex-shader*
 					   s))

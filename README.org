@@ -126,3 +126,4 @@ Brazil 2016)
 
 # Authentification
 - https://github.com/slyrus/hunchentoot-auth
+- https://github.com/fukamachi/lack Lack.Middleware.Auth.Basic
