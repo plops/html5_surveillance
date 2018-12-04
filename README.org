@@ -91,6 +91,13 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - chrome://netinternals/#sockets  fine grained reporting in chrome
 - https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation check if we have wifi
 - http://newartisans.com/2007/11/a-quick-hunchentoot-primer/
+- https://www.youtube.com/watch?v=kM2EFWpTWc8 webrtc ericsson labs
+- https://github.com/coturn/coturn TURN server
+- https://deepstreamhub.com/tutorials/protocols/webrtc-intro/
+- https://blog.printf.net/articles/2013/05/17/webrtc-without-a-signaling-server/ var pc_config = {“iceServers”:[]};
+- https://news.ycombinator.com/item?id=15274150 webrtc in production, which compression; Android versions before 5.x use an old webview that has no support for WebRTC.
+- https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Simple_RTCDataChannel_sample
+
 
 # Types
 - typescript or eslint with tern.js?
@@ -105,6 +112,9 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
    renew"
 - here is an example of how to self-sign:
 - https://stackoverflow.com/questions/50749373/hunchentoot-define-easy-handler-with-ssl
+
+# Decrypt SSL in wireshark
+- https://support.citrix.com/article/CTX116557
 
 
 # Install nginx

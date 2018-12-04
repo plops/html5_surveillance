@@ -359,6 +359,7 @@
 			    (w ("new WebSocket" url)))
 			   (setf w.onopen
 				 (lambda ()
+				   (create_webrtc w)
 				   (w.send (+ (string "{startup: '")
 							  (dot (document.getElementById (string "ssl-client-connection"))
 							       innerText)
@@ -391,11 +392,25 @@
 			   (return w))
 		    
 		    )
+
+		  (def create_webrtc ( signaling )
+		    (logger (string "create_webrtc .."))
+		    (let-g ((configuration (dict (iceServers (list))))
+			    (pc ("new RTCPeerConnection" configuration)))
+			   (setf pc.onicecandidate (lambda (event)
+						     (if event.candidate
+							 (statement ;; send to peer
+							  (logger (+ (string "onicecandidate: ")
+								     event))
+							  (signaling.send event.candidate))
+							 ;; else all have been sent
+							 )))))
 		  
 		  (def startup ()
 		    (logger (string "startup .."))
 		    
 		    (let-g ((ws (create_websocket))
+			    
 			    (gl (get_context))
 			    (video (setup_video)))
 			   
