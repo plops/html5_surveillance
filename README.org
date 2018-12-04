@@ -92,6 +92,8 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://developer.mozilla.org/en-US/docs/Web/API/NetworkInformation check if we have wifi
 - http://newartisans.com/2007/11/a-quick-hunchentoot-primer/
 - http://www.justgoscha.com/programming/2014/03/07/simple-webrtc-datachannel-establishment-for-dummies.html
+- https://www.w3.org/TR/hr-time-2/ sub-millisecond timing
+- https://w3c.github.io/webrtc-pc/ webrtc spec
 
 
 # Types
