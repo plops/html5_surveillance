@@ -17,6 +17,66 @@
 (defun handler (env)
   '(200 nil ("hello world")))
 
+;; openssl req -new -x509 -nodes -out /tmp/server.crt -keyout /tmp/server.key
+
+
+
+
+(defparameter *p*
+ (let* ((p (sb-ext:run-program "/usr/bin/openssl" '("req" "-new" "-x509"
+						   "-nodes"  "-out"
+						   "server.crt" "-keyout"
+						   "server.key")
+			      :directory "/tmp/" :output :stream :input :stream
+			      :wait nil))
+       (stream-in (sb-ext:process-input  p))
+	(stream-out (sb-ext:process-output p))
+	)
+
+   (flet ((consume ()
+	    (loop while (listen stream-out) do
+		 (format t "~a" (read-char stream-out))))
+	  (consume-until-colon ()
+	    (loop for line = (read-line stream-out nil 'foo)
+	       until (or (eq line 'foo)
+			 (eq #\: (elt line (1- (length line)))))
+	       do (print line)
+	))
+	  (consume-until-colon-nowait ()
+	    (loop while (listen stream-out) do
+		 (let ((line (read-line stream-out nil 'foo)))
+		   (print line)
+		   ))))
+     (consume-until-colon)
+     (loop for e in
+	 '("NL"
+	   "Noord-Brabant" "Veldhoven" "ck" "certifacte_unit"
+	   "nn" "kielhorn.martin@gmail.com" ".")
+	do
+	  (consume-until-colon)
+	  (write-line (format nil "~a~%" e) stream-in)
+	  (format t "~&> ~a~%" e)
+	 (finish-output stream-in)))
+   (close stream-in)
+   p))
+
+(loop while (listen (sb-ext:process-output *p*)) do
+     (format t "~a" (read-char (sb-ext:process-output *p*))))
+
+
+
+(read-line (sb-ext:process-output *p*))
+(read-sequence (make-string 1023) (sb-ext:process-output *p*))
+(sb-ext:prc)
+1
+
+
+(unless (and (probe-file "/tmp/server.key")
+	     (probe-file "/tmp/server.crt"))
+  
+  )
+ 
+
 (defparameter *clack-server* (clack:clackup
 			      (lambda (env)
 				(funcall 'handler env))
@@ -24,7 +84,9 @@
 			      :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
 			      :use-default-middlewares nil))
 
-;; cd /tmp; openssl req -new -x509 -nodes -out server.crt -keyout server.key
+
+
+
 ;; :ssl-key-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"  :ssl-cert-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 
 (defun ws-handler (env)
@@ -404,7 +466,13 @@
 								     event))
 							  (signaling.send event.candidate))
 							 ;; else all have been sent
-							 )))))
+							 )))
+			   (do0
+			    (pc.createDataChannel (string
+						   "datachannel")
+						  (dict (reliable
+							 false))))
+			   ))
 		  
 		  (def startup ()
 		    (logger (string "startup .."))
@@ -502,7 +570,7 @@
 						  (requestAnimationFrame
 						   render)
 						  ))
-					 (render)
+					 (render 0)
 					 
 					 (if (not is_recording_p)
 					     (statement
