@@ -21,60 +21,43 @@
 
 
 
-
-(defparameter *p*
- (let* ((p (sb-ext:run-program "/usr/bin/openssl" '("req" "-new" "-x509"
+(unless (and (probe-file "/tmp/server.key")
+	     (probe-file "/tmp/server.crt"))
+  ;; generate keys if they don't exist
+  (let* ((p (sb-ext:run-program "/usr/bin/openssl" '("req" "-new" "-x509"
 						   "-nodes"  "-out"
 						   "server.crt" "-keyout"
 						   "server.key")
 			      :directory "/tmp/" :output :stream :input :stream
 			      :wait nil))
        (stream-in (sb-ext:process-input  p))
-	(stream-out (sb-ext:process-output p))
-	)
-
-   (flet ((consume ()
-	    (loop while (listen stream-out) do
-		 (format t "~a" (read-char stream-out))))
-	  (consume-until-colon ()
-	    (loop for line = (read-line stream-out nil 'foo)
-	       until (or (eq line 'foo)
-			 (eq #\: (elt line (1- (length line)))))
-	       do (print line)
-	))
-	  (consume-until-colon-nowait ()
-	    (loop while (listen stream-out) do
-		 (let ((line (read-line stream-out nil 'foo)))
-		   (print line)
-		   ))))
-     (consume-until-colon)
-     (loop for e in
+       (stream-out (sb-ext:process-output p)))
+  (flet ((consume ()
+	   (loop while (listen stream-out) do
+		(format t "~a" (read-char stream-out))))
+	 (consume-until-colon ()
+	   (loop for char = (read-char stream-out nil 'foo)
+	      until (or (eq char 'foo)
+			(eq #\: char))
+	      do (format t "~a" char)
+		))
+	 (consume-until-colon-nowait ()
+	   (loop while (listen stream-out) do
+		(let ((line (read-line stream-out nil 'foo)))
+		  (print line)
+		  ))))
+    (loop for e in
 	 '("NL"
 	   "Noord-Brabant" "Veldhoven" "ck" "certifacte_unit"
-	   "nn" "kielhorn.martin@gmail.com" ".")
-	do
-	  (consume-until-colon)
-	  (write-line (format nil "~a~%" e) stream-in)
-	  (format t "~&> ~a~%" e)
+	   "nn" "kielhorn.martin@gmail.com")
+       do
+	 (consume-until-colon)
+	 (write-line (format nil "~a~%" e) stream-in)
+	 (format t "~&> ~a~%" e)
 	 (finish-output stream-in)))
-   (close stream-in)
-   p))
-
-(loop while (listen (sb-ext:process-output *p*)) do
-     (format t "~a" (read-char (sb-ext:process-output *p*))))
-
-
-
-(read-line (sb-ext:process-output *p*))
-(read-sequence (make-string 1023) (sb-ext:process-output *p*))
-(sb-ext:prc)
-1
-
-
-(unless (and (probe-file "/tmp/server.key")
-	     (probe-file "/tmp/server.crt"))
-  
-  )
+  (close stream-in)
+  (sb-ext:process-wait p)
+  (sb-ext:process-close p)))
  
 
 (defparameter *clack-server* (clack:clackup
