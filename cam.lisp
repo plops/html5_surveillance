@@ -205,6 +205,12 @@
 			(incf log.innerHTML
 			      (+ message
 				 (string "<br />")))))
+		  (def dbg (title obj)
+		    (logger (+ title
+			       (? (and JSON
+				       JSON.stringify)
+				  (JSON.stringify obj)
+				  obj))))
 		  (def handle_success (stream)
 		    (logger (string "success!"))
 		    (setf player.srcObject stream))
@@ -424,7 +430,10 @@
 				 w.onmessage
 				 (lambda (e)
 				   (logger (+ (string "websocket received message: ")
-					      e.data)))
+					      (? (and JSON
+						      JSON.stringify)
+						 (JSON.stringify e.data)
+						 e.data))))
 				 w.onclose
 				 (lambda (e)
 				   (logger (+ (string "websocket closed: ")
@@ -472,6 +481,8 @@
 				  #+nil (setf chan_send.onopen (lambda (s)))
 				  (dot (pc.createOffer)
 				       (then (lambda (offer)
+					       (dbg (string "createOffer: offer=")
+						    offer)
 					       (pc.setLocalDescription offer)))))
 			   ))
 		  
