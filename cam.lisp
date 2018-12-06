@@ -13,6 +13,16 @@
 
 (defparameter *wss-port* 7778)
 (defparameter *ssl-port* 7777)
+(defparameter *server-ip* 
+  (let ((ipstr (with-output-to-string (s)
+		 (sb-ext:run-program "/usr/bin/hostname" '("-i") :output s)
+		 )))
+    (string-trim 
+     '(#\Space #\Newline #\Backspace #\Tab 
+       #\Linefeed #\Page #\Return #\Rubout)
+     ipstr)
+    ))
+
 
 (defun handler (env)
   '(200 nil ("hello world")))
@@ -450,11 +460,14 @@
 							  (signaling.send event.candidate))
 							 ;; else all have been sent
 							 )))
-			   (do0
-			    (pc.createDataChannel (string
-						   "datachannel")
-						  (dict (reliable
-							 false))))
+			   (let-g ((chan_send (pc.createDataChannel (string
+								     "datachannel")
+								    (dict (reliable
+									   false)))))
+				  #+nil (setf chan_send.onopen (lambda (s)))
+				  (dot (pc.createOffer)
+				       (then (lambda (offer)
+					       (pc.setLocalDescription offer)))))
 			   ))
 		  
 		  (def startup ()
@@ -615,7 +628,7 @@
 			  (:p (princ (format nil "~a" env) s))
 			  (:div :id "wss-server-connection"
 				(princ (format nil "~a:~a"
-					     "192.168.2.147"
+					     *server-ip*
 					     *wss-port*) s))
 			  (:div :id "ssl-client-connection"
 				(princ (format nil "~a:~a"
@@ -623,7 +636,7 @@
 					     remote-port) s))
 			  
 			  (:a :href (format nil "https://~a:~a/"
-					    (or server-name "localhost")
+					    (or server-name *server-ip*)
 					    *wss-port*)
 				    "accept secure websocket cert here")
 			  
