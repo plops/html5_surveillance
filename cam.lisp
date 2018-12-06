@@ -3,7 +3,7 @@
 (mapc #'ql:quickload '("cl-fad" "cl-who" 
 		       "clack" "websocket-driver"
 		       "cl-js-generator" "cl-cpp-generator"
-		       "event-emitter"))
+		       "event-emitter" "local-time"))
 
 (in-package #:cl-js-generator)
 
@@ -82,24 +82,51 @@
 
 ;; :ssl-key-file #P"/etc/letsencrypt/live/cheapnest.org/privkey.pem"  :ssl-cert-file #P"/etc/letsencrypt/live/cheapnest.org/fullchain.pem"
 
-(defun ws-handler (env)
-  (handler-case 
-   (destructuring-bind (&key request-uri remote-addr remote-port content-type content-length &allow-other-keys)
-       env
-     (format t "ws-handler: ~a~%" env)
-     (let ((ws (websocket-driver:make-server env)))
-       (event-emitter:on :message ws
-			 (lambda (message)
-			   (format t "ws-handler received: ~a~%" message)
-			   (websocket-driver:send ws message)))
-       (lambda (responder)
-	 (format t "ws-handler: start connection ~a~%" responder) 
-	 (websocket-driver:start-connection ws))))
-    (condition ()
-      (format t "This connection wants websocket protocol!~%")
-      `(404 nil ("This connection wants websocket protocol!")))))
 
 
+
+(let ((ws-connections ()))
+  (defun get-ws-connections ()
+    ws-connections)
+ (defun ws-handler (env)
+   (handler-case 
+       (destructuring-bind (&key request-uri remote-addr remote-port
+				 content-type content-length &allow-other-keys)
+	   env
+	 (format t "ws-handler: ~a~%" env)
+	 (let ((ws (websocket-driver:make-server env)))
+	   (push `(:remote-addr ,remote-addr
+				:remote-port ,remote-port
+				:socket ,ws
+				:connection-setup-time ,(local-time:now))
+		 ws-connections)
+	   (event-emitter:on :message ws
+			     (lambda (message)
+			       (format t "ws-handler received: ~a~%" message)
+			       (mapcar #'(lambda (x) (websocket-driver:send (getf x :socket)
+									    message))
+				       ws-connections)))
+	   (lambda (responder)
+	     (format t "ws-handler: start connection ~a~%" responder) 
+	     (websocket-driver:start-connection ws))))
+     (condition ()
+       (format t "This connection wants websocket protocol!~%")
+       `(404 nil ("This connection wants websocket protocol!"))))))
+
+
+;; ws-handler: (request-method GET script-name  path-info / server-name nil
+;;              server-port 80 server-protocol HTTP/1.1 request-uri / url-scheme
+;;              https remote-addr 192.168.1.18 remote-port 59576 query-string nil
+;;              raw-body #<flexi-io-stream {1004D180D3}> content-length nil
+;;              content-type nil clack.streaming t clack.io #<client {1004D18123}>
+;;              headers #<hash-table :TEST equal :COUNT 12 {1004D18513}>)
+
+;; ws-handler: (request-method GET script-name  path-info / server-name nil
+;;              server-port 80 server-protocol HTTP/1.1 request-uri / url-scheme
+;;              https remote-addr 192.168.1.18 remote-port 59588 query-string nil
+;;              raw-body #<flexi-io-stream {1004DC3BE3}> content-length nil
+;;              content-type nil clack.streaming t clack.io #<client {1004DC3C33}>
+;;              headers #<hash-table :TEST equal :COUNT 13 {1004DC4023}>)
 
 (clack:clackup
  (lambda (env)
