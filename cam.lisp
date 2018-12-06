@@ -455,8 +455,13 @@
 			   (setf pc.onicecandidate (lambda (event)
 						     (if event.candidate
 							 (statement ;; send to peer
+
+							  
 							  (logger (+ (string "onicecandidate: ")
-								     event))
+								     (? (and JSON
+									     JSON.stringify)
+									(JSON.stringify event)
+									event)))
 							  (signaling.send event.candidate))
 							 ;; else all have been sent
 							 )))
