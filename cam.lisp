@@ -85,13 +85,14 @@
 
 
 
+
 (let ((ws-connections ()))
   (defun get-ws-connections ()
     ws-connections)
  (defun ws-handler (env)
    (handler-case 
        (destructuring-bind (&key request-uri remote-addr remote-port
-				 content-type content-length &allow-other-keys)
+				 content-type content-length headers &allow-other-keys)
 	   env
 	 (format t "ws-handler: ~a~%" env)
 	 (let ((ws (websocket-driver:make-server env))
@@ -101,6 +102,7 @@
 				:remote-port ,remote-port
 				:socket ,ws
 				:connection-setup-time ,now
+				:user-agent ,(gethash "user-agent" headers)
 				:last-seen ,now)
 		 ws-connections)
 	   (event-emitter:on :message ws
@@ -665,8 +667,8 @@
 			   (:table
 			    (loop for row in (get-ws-connections) do
 				 (cl-who:htm
-				  (:tr
-				   (loop for x in '(:remote-addr :remote-port :last-seen) do
+				  (:tr :cellpadding 4
+				   (loop for x in '(:remote-addr :remote-port :last-seen :user-agent) do
 					(cl-who:htm
 					 (:td (cl-who:fmt "~a" (getf row x)))))))))
 			   )
