@@ -429,11 +429,8 @@
 				    (string "websocket open")))
 				 w.onmessage
 				 (lambda (e)
-				   (logger (+ (string "websocket received message: ")
-					      (? (and JSON
-						      JSON.stringify)
-						 (JSON.stringify e.data)
-						 e.data))))
+				   (dbg  (string "websocket received message: e.data=")
+					 e.data))
 				 w.onclose
 				 (lambda (e)
 				   (logger (+ (string "websocket closed: ")
@@ -466,11 +463,8 @@
 							 (statement ;; send to peer
 
 							  
-							  (logger (+ (string "onicecandidate: ")
-								     (? (and JSON
-									     JSON.stringify)
-									(JSON.stringify event)
-									event)))
+							  (dbg (string "onicecandidate: event=")
+							       event)
 							  (signaling.send event.candidate))
 							 ;; else all have been sent
 							 )))
@@ -483,7 +477,13 @@
 				       (then (lambda (offer)
 					       (dbg (string "createOffer: offer=")
 						    offer)
-					       (pc.setLocalDescription offer)))))
+					       (pc.setLocalDescription offer)
+					       (signaling.send
+						(JSON.stringify
+						 (dict ((string "messageType")
+							(string  "offer"))
+						       ((string "peerDescription")
+							offer))))))))
 			   ))
 		  
 		  (def startup ()
