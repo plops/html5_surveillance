@@ -117,6 +117,9 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://github.com/emannion/webrtc-audio-video
 
 
+- https://en.wikipedia.org/wiki/Session_Description_Protocol
+- https://tools.ietf.org/html/rfc4566
+
 # Types
 - typescript or eslint with tern.js?
 
