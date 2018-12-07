@@ -117,8 +117,8 @@
 									    message))
 				       ws-connections)))
 	   (event-emitter:on :close ws
-			     (lambda (data &key code)
-			       (format t "ws-handler socket closed: ~a ~a~%" data code)
+			     (lambda (&key code reason)
+			       (format t "ws-handler socket closed: code=~a reason=~a~%" code reason)
 			       (setf ws-connections
 				     (remove-if #'(lambda (x)
 						    (and (string= remote-addr
@@ -127,9 +127,10 @@
 		     ))
 	    ws-connections))
 			       ))
+	   
 	   (event-emitter:on :error ws
-			     (lambda (close reason)
-			       (format t "ws-handler error: ~a ~a~%" close reason)
+			     (lambda (&rest rest)
+			       (format t "ws-handler error: ~a~%" rest)
 			       (setf ws-connections
 				     (remove-if #'(lambda (x)
 						    (and (string= remote-addr
