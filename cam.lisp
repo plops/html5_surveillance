@@ -68,15 +68,20 @@
   (close stream-in)
   (sb-ext:process-wait p)
   (sb-ext:process-close p)))
- 
 
-(defparameter *clack-server* (clack:clackup
-			      (lambda (env)
-				(funcall 'handler env))
-			      :port *ssl-port*
-			      :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
-			      :use-default-middlewares nil))
 
+(progn
+  (defvar *clack-server* nil) ;; initialize with nil
+  (when *clack-server* ;; stop pre-existing server
+    (clack.handler:stop *clack-server*)
+    (setf *clack-server* nil))
+  (setf *clack-server* ;; start new server
+	(clack:clackup
+	 (lambda (env)
+	   (funcall 'handler env))
+	 :port *ssl-port*
+	 :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
+	 :use-default-middlewares nil)))
 
 
 
@@ -111,6 +116,27 @@
 			       (mapcar #'(lambda (x) (websocket-driver:send (getf x :socket)
 									    message))
 				       ws-connections)))
+	   (event-emitter:on :close ws
+			     (lambda (data &key code)
+			       (format t "ws-handler socket closed: ~a ~a~%" data code)
+			       (setf ws-connections
+				     (remove-if #'(lambda (x)
+						    (and (string= remote-addr
+								  (getf x :remote-addr))
+							 (eq remote-port (getf x :remote-port))
+		     ))
+	    ws-connections))
+			       ))
+	   (event-emitter:on :error ws
+			     (lambda (close reason)
+			       (format t "ws-handler error: ~a ~a~%" close reason)
+			       (setf ws-connections
+				     (remove-if #'(lambda (x)
+						    (and (string= remote-addr
+								  (getf x :remote-addr))
+							 (eq remote-port (getf x :remote-port))
+		     ))
+	    ws-connections))))
 	   (lambda (responder)
 	     (format t "ws-handler: start connection ~a~%" responder) 
 	     (websocket-driver:start-connection ws))))
@@ -118,13 +144,18 @@
        (format t "This connection wants websocket protocol!~%")
        `(404 nil ("This connection wants websocket protocol!"))))))
 
- 
-(clack:clackup
- (lambda (env)
-   (funcall 'ws-handler env))
- :port *wss-port*
- :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
- :use-default-middlewares nil)
+(progn
+  (defvar *ws-server* nil) ;; initialize with nil
+  (when *ws-server* ;; stop pre-existing server
+    (clack.handler:stop *ws-server*)
+    (setf *ws-server* nil))
+  (setf *ws-server* ;; start new server
+	(clack:clackup
+	 (lambda (env)
+	   (funcall 'ws-handler env))
+	 :port *wss-port*
+	 :ssl t :ssl-key-file  #P"/tmp/server.key" :ssl-cert-file #P"/tmp/server.crt"
+	 :use-default-middlewares nil)))
 
 (defun fill-buffer (name &key (type "Float32") data1d (usage-hint "gl.STATIC_DRAW")) 
   `(let-g ((,name (gl.createBuffer)))
