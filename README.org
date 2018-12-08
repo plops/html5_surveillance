@@ -26,6 +26,47 @@ return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStr
 - seems to do completion but needs parenscript patches and is not on
   melpa. i haven't tried it
 
+# Dependencies
+
+- Production
+
+| name              | purpose                        | comment                                                   |   |   |
+|-------------------+--------------------------------+-----------------------------------------------------------+---+---|
+| sbcl              | common lisp compiler           | i only test on sbcl                                       |   |   |
+| quicklisp         | common lisp package management |                                                           |   |   |
+| letsencrypt       | key generation                 | not automated yet                                         |   |   |
+| cl-js-generator   | generate javascript from sexpr | much simpler than parenscript because I want more control |   |   |
+| js-beautify       | format javascript              |                                                           |   |   |
+| cl-cpp-generator  | generate glsl code from sexpr  |                                                           |   |   |
+| clang-format      | pretty print glsl code         |                                                           |   |   |
+| clack             | https server                   |                                                           |   |   |
+| websocket-driver  | secure websockets              |                                                           |   |   |
+| local-time        | server-side timestamps         |                                                           |   |   |
+| /usr/bin/hostname | obtain server ip               |                                                           |   |   |
+
+- Production in Browser
+
+| name       | purpose              | comment |   |   |
+|------------+----------------------+---------+---+---|
+| html5      | video, canvas        |         |   |   |
+| javascript | webgl1, glue code    |         |   |   |
+| websockets | for webrtc handshake |         |   |   |
+| webrtc     | camera, peer-to-peer |         |   |   |
+
+
+- Testing
+
+| name            | purpose                     | comment |   |   |
+|-----------------+-----------------------------+---------+---+---|
+| emacs           | editor                      |         |   |   |
+| cl-py-generator | generate python from sexpr  |         |   |   |
+| openssl         | ssl key generation          |         |   |   |
+| slime           | IDE                         |         |   |   |
+| python          | run tests                   |         |   |   |
+| selenium        | functional tests in browser |         |   |   |
+| xdotool         | allow access to camera      |         |   |   |
+| wmctrl          | allow access to camera      |         |   |   |
+
 # References
 
 - https://whatwebcando.today/camera-microphone.html
@@ -121,6 +162,7 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://tools.ietf.org/html/rfc4566
 
 - https://selenium-python.readthedocs.io/waits.html
+
 
 - https://www.youtube.com/watch?v=uYfXs_6N_Mk 2016 WebRTC Hacks - Chad Hart (webrtcHacks.com) he built the same thing in 2013
 
