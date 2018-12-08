@@ -32,7 +32,7 @@ return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStr
 
 | name              | purpose                        | comment                                                   |   |   |
 |-------------------+--------------------------------+-----------------------------------------------------------+---+---|
-| sbcl              | common lisp compiler           |                                                           |   |   |
+| sbcl              | common lisp compiler           | i only test on sbcl                                       |   |   |
 | quicklisp         | common lisp package management |                                                           |   |   |
 | letsencrypt       | key generation                 | not automated yet                                         |   |   |
 | cl-js-generator   | generate javascript from sexpr | much simpler than parenscript because I want more control |   |   |
@@ -64,7 +64,8 @@ return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStr
 | slime           | IDE                         |         |   |   |
 | python          | run tests                   |         |   |   |
 | selenium        | functional tests in browser |         |   |   |
-
+| xdotool         | allow access to camera      |         |   |   |
+| wmctrl          | allow access to camera      |         |   |   |
 
 # References
 
