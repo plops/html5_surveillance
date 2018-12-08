@@ -48,34 +48,11 @@
 		      (format url)))
 	  (driver.get url)
 	  (wait (string "a"))
-	  ;; xwininfo -tree -root
-	  ;; 0x3400040 "Firefox": ("Popup" "Firefox")  845x135+361+391  +361+391
-          ;; 1 child:
-          ;; 0x3400041 (has no name): ()  1x1+-1+-1  +360+390
-
-	  #+nil 81788977
-	  ;(time.sleep 2)
-
 	  (subprocess.call (list (string "wmctrl")
 				 (string "-a")
 				 (string "cam - Mozilla Firefox")))
 	  (subprocess.call (list (string "xdotool")
-				 (string "search")
-				 (string "--sync")
-				 (string "--onlyvisible")
-				 (string "--name")
-				 (string "cam - Mozilla Firefox")
-				 (string "windowactivate")
-				 (string "--sync")
 				 (string "key")
-				 (string "alt+a")))
-	 #+nil
-	  (subprocess.call (list (string "xdotool")
-				 (string "key")
-				 (string "alt+a")))
-	  #+nil
-	  (dot (driver.find_element_by_tag_name (string "html"))
-	       (send_keys (+ selenium.webdriver.common.keys.Keys.ALT (string "a"))) ))
-	 )))
+				 (string "alt+a")))))))
   ;(run code)
   (write-source "/home/martin/stage/html5_surveillance/functional_test/run00" code))

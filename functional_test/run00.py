@@ -47,5 +47,5 @@ print("open url={}".format(url))
 driver.get(url)
 wait("a")
 subprocess.call(["wmctrl", "-a", "cam - Mozilla Firefox"])
-subprocess.call(["xdotool", "search", "--sync", "--onlyvisible", "--name", "cam - Mozilla Firefox", "windowactivate", "--sync", "key", "alt+a"])
+subprocess.call(["xdotool", "key", "alt+a"])
 
