@@ -163,6 +163,7 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 
 - https://selenium-python.readthedocs.io/waits.html
 
+
 # Types
 - typescript or eslint with tern.js?
 
