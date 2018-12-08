@@ -38,6 +38,7 @@ return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStr
 | cl-js-generator   | generate javascript from sexpr | much simpler than parenscript because I want more control |   |   |
 | js-beautify       | format javascript              |                                                           |   |   |
 | cl-cpp-generator  | generate glsl code from sexpr  |                                                           |   |   |
+| clang-format      | pretty print glsl code         |                                                           |   |   |
 | clack             | https server                   |                                                           |   |   |
 | websocket-driver  | secure websockets              |                                                           |   |   |
 | local-time        | server-side timestamps         |                                                           |   |   |
