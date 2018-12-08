@@ -122,6 +122,14 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 
 - https://selenium-python.readthedocs.io/waits.html
 
+- https://www.youtube.com/watch?v=uYfXs_6N_Mk 2016 WebRTC Hacks - Chad Hart (webrtcHacks.com) he built the same thing in 2013
+
+- thirdeye.xyz his hackathon entry
+- project oxford computer vision api (microsoft)
+- webrtc is used to get internal ip for tracking (chrome tries to eliminate this)
+- webrtc notifier  tries to report this
+
+
 # Types
 - typescript or eslint with tern.js?
 
