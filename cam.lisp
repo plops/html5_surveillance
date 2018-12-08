@@ -708,7 +708,7 @@
 			  (:p (princ (format nil "~a" env) s))
 			  (:div :id "wss-server-connection"
 				(princ (format nil "~a:~a"
-					     *server-ip*e
+					     *server-ip*
 					     *wss-port*) s))
 			  (:div :id "ssl-client-connection"
 				(princ (format nil "~a:~a"
