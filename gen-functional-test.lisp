@@ -25,7 +25,7 @@
 		wait_obj (selenium.webdriver.support.ui.WebDriverWait driver 5))
 
 	  (def wait (selector &key (by (string "css")) (type (string "clickable")))
-
+	    "# wait by={css,id} type={clickable,visible,invisible}"
 	    (if (== (string "id") by)
 		(setf target (tuple
 			   selenium.webdriver.common.by.By.ID
@@ -41,18 +41,30 @@
 		    (if (== (string "invisible") type)
 		    (setf condition selenium.webdriver.support.expected_conditions.invisibility_of_element_located))))
 	    (return (wait_obj.until (condition target))))
+
+	  
 	  (setf myip (socket.gethostbyname (socket.gethostname))
 		url (dot (string "https://{}:7777/")
 			 (format myip)))
+
 	  (print (dot (string "open url={}")
 		      (format url)))
+
 	  (driver.get url)
 	  (wait (string "a"))
-	  (subprocess.call (list (string "wmctrl")
-				 (string "-a")
-				 (string "cam - Mozilla Firefox")))
-	  (subprocess.call (list (string "xdotool")
-				 (string "key")
-				 (string "alt+a")))))))
+	  
+	 
+	  (time.sleep 2)
+	  (dot (wait (string "body"))
+	       
+	       (send_keys (+ selenium.webdriver.common.keys.Keys.ALT
+			     (string "a"))))
+	  #+nil(do0
+	   (subprocess.call (list (string "wmctrl")
+				  (string "-a")
+				  (string "cam - Mozilla Firefox")))
+	   (subprocess.call (list (string "xdotool")
+				  (string "key")
+				  (string "alt+a"))))))))
   ;(run code)
   (write-source "/home/martin/stage/html5_surveillance/functional_test/run00" code))

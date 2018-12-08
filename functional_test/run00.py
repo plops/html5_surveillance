@@ -15,6 +15,7 @@ driver=selenium.webdriver.Firefox()
 wait_obj=selenium.webdriver.support.ui.WebDriverWait(driver, 5)
 
 def wait(selector, by="css", type="clickable"):
+    # wait by={css,id} type={clickable,visible,invisible}
     if ( (("id")==(by)) ):
         target=(selenium.webdriver.common.by.By.ID,selector,)
 
@@ -46,6 +47,6 @@ url="https://{}:7777/".format(myip)
 print("open url={}".format(url))
 driver.get(url)
 wait("a")
-subprocess.call(["wmctrl", "-a", "cam - Mozilla Firefox"])
-subprocess.call(["xdotool", "key", "alt+a"])
+time.sleep(2)
+wait("body").send_keys(((selenium.webdriver.common.keys.Keys.ALT)+("a")))
 
