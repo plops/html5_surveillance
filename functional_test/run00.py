@@ -47,6 +47,7 @@ url="https://{}:7777/".format(myip)
 print("open url={}".format(url))
 driver.get(url)
 wait("a")
-time.sleep(2)
-wait("body").send_keys(((selenium.webdriver.common.keys.Keys.ALT)+("a")))
+subprocess.call(["wmctrl", "-a", "cam - Mozilla Firefox"])
+subprocess.call(["xdotool", "key", "alt+a"])
+
 

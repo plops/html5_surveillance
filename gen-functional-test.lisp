@@ -53,13 +53,7 @@
 	  (driver.get url)
 	  (wait (string "a"))
 	  
-	 
-	  (time.sleep 2)
-	  (dot (wait (string "body"))
-	       
-	       (send_keys (+ selenium.webdriver.common.keys.Keys.ALT
-			     (string "a"))))
-	  #+nil(do0
+	  (do0
 	   (subprocess.call (list (string "wmctrl")
 				  (string "-a")
 				  (string "cam - Mozilla Firefox")))
