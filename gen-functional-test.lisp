@@ -2,7 +2,7 @@
   (ql:quickload :cl-py-generator))
 
 (in-package :cl-py-generator)
-;; sudo pacman -S python-selenium geckodriver
+;; sudo pacman -S python-selenium geckodriver xdotool wmctrl
 ;(start-python)
 
 (let ((code
@@ -14,16 +14,66 @@
 		   socket
 		   selenium
 		   selenium.webdriver.common.keys
-		   ))
+		   selenium.webdriver.support.expected_conditions
+		   selenium.webdriver.support.ui
+		   selenium.webdriver.common.by
+		   subprocess
+		   time))
+	 
 	 (do0
 	  (setf driver (selenium.webdriver.Firefox)
-		myip (socket.gethostbyname (socket.gethostname))
+		wait_obj (selenium.webdriver.support.ui.WebDriverWait driver 5))
+
+	  (def wait (selector &key (by (string "css")) (type (string "clickable")))
+
+	    (if (== (string "id") by)
+		(setf target (tuple
+			   selenium.webdriver.common.by.By.ID
+			   selector))
+		(if (== (string "css") by)
+		 (setf target (tuple
+			       selenium.webdriver.common.by.By.CSS_SELECTOR
+			       selector))))
+	    (if (== (string "clickable") type)
+		(setf condition selenium.webdriver.support.expected_conditions.element_to_be_clickable)
+		(if (== (string "visible") type)
+		    (setf condition selenium.webdriver.support.expected_conditions.visibility_of_element_located)
+		    (if (== (string "invisible") type)
+		    (setf condition selenium.webdriver.support.expected_conditions.invisibility_of_element_located))))
+	    (return (wait_obj.until (condition target))))
+	  (setf myip (socket.gethostbyname (socket.gethostname))
 		url (dot (string "https://{}:7777/")
-			 (format myip))
-		)
+			 (format myip)))
 	  (print (dot (string "open url={}")
 		      (format url)))
 	  (driver.get url)
+	  (wait (string "a"))
+	  ;; xwininfo -tree -root
+	  ;; 0x3400040 "Firefox": ("Popup" "Firefox")  845x135+361+391  +361+391
+          ;; 1 child:
+          ;; 0x3400041 (has no name): ()  1x1+-1+-1  +360+390
+
+	  #+nil 81788977
+	  ;(time.sleep 2)
+
+	  (subprocess.call (list (string "wmctrl")
+				 (string "-a")
+				 (string "cam - Mozilla Firefox")))
+	  (subprocess.call (list (string "xdotool")
+				 (string "search")
+				 (string "--sync")
+				 (string "--onlyvisible")
+				 (string "--name")
+				 (string "cam - Mozilla Firefox")
+				 (string "windowactivate")
+				 (string "--sync")
+				 (string "key")
+				 (string "alt+a")))
+	 #+nil
+	  (subprocess.call (list (string "xdotool")
+				 (string "key")
+				 (string "alt+a")))
+	  #+nil
 	  (dot (driver.find_element_by_tag_name (string "html"))
 	       (send_keys (+ selenium.webdriver.common.keys.Keys.ALT (string "a"))) ))
 	 )))

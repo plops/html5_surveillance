@@ -120,6 +120,8 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://en.wikipedia.org/wiki/Session_Description_Protocol
 - https://tools.ietf.org/html/rfc4566
 
+- https://selenium-python.readthedocs.io/waits.html
+
 # Types
 - typescript or eslint with tern.js?
 
