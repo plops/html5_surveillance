@@ -245,7 +245,7 @@
 	  `(let ((player (document.getElementById (string "player")))
 		 (log (document.getElementById (string "log"))))
 	     (def logger (message)
-	       (if (== (string "object") (typeof message))
+	       #+nil (if (== (string "object") (typeof message))
 		   (incf log.innerHTML
 			 (+ (? (and JSON
 				    JSON.stringify)
