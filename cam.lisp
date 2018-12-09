@@ -159,8 +159,8 @@
 	 :use-default-middlewares nil)))
 
 (defun fill-buffer (name &key (type "Float32") data1d (usage-hint "gl.STATIC_DRAW")) 
-  `(let-g ((,name (gl.createBuffer)))
-	  (let ((vec ,data1d))
+  `(let ((,name (gl.createBuffer)))
+	  (let-l ((vec ,data1d))
 	    (gl.bindBuffer gl.ARRAY_BUFFER ,name)
 	    (gl.bufferData gl.ARRAY_BUFFER
 			   (,(format nil "new ~aArray" type)
@@ -179,7 +179,7 @@
 			      )
   (let ((loc (format nil "~a_attribute_location" name)))
     `(do0
-      (let-g ((,loc (gl.getAttribLocation ,program (string
+      (let ((,loc (gl.getAttribLocation ,program (string
 						    ,name)))))
       
       (statement
@@ -189,7 +189,7 @@
 	    (gl_error_message gl (gl.getError))))
        (gl.enableVertexAttribArray ,loc)
        (gl.bindBuffer gl.ARRAY_BUFFER ,buffer)
-       (let ((size ,size) ;; components per iteration
+       (let-l ((size ,size) ;; components per iteration
 	     (type ,gl-type)
 	     (normalize false)
 	     (element_size ,(format
@@ -242,7 +242,7 @@
   (let ((script-str
 	 (			     ;cl-js-generator::emit-js :code ;
 	  cl-js-generator::beautify-source
-	  `(let-g ((player (document.getElementById (string "player")))
+	  `(let ((player (document.getElementById (string "player")))
 		   (log (document.getElementById (string "log"))))
 		  (def logger (message)
 		    (if (== (string "object") (typeof message))
@@ -288,13 +288,13 @@
 		       (then handle_success)))))
 		  (def create_shader (gl type source)
 		    (			; statement
-		     let-g ((shader (gl.createShader type)))
+		     let ((shader (gl.createShader type)))
 					;(var-decl shader (gl.createShader type))
 		     (logger (string "create_shader .."))
 		     (logger type)
 		     (gl.shaderSource shader source)
 		     (gl.compileShader shader)
-		     (let-g ((success (gl.getShaderParameter shader
+		     (let ((success (gl.getShaderParameter shader
 							     gl.COMPILE_STATUS)))
 			    (logger success)
 			    (if success
@@ -307,7 +307,7 @@
 				 (logger (gl.getShaderInfoLog shader))
 				 (gl.deleteShader shader))))))
 		  (def create_program (gl vertex_shader fragment_shader)
-		    (let-g ((program (gl.createProgram)))
+		    (let ((program (gl.createProgram)))
 			   (logger (string "create_program .."))
 			   
 			   
@@ -322,7 +322,7 @@
 				(gl.deleteProgram program)))))
 		  (def get_context ()
 		    (logger (string "get_context .."))
-		    (let-g ((canvas (document.getElementById (string "c")))
+		    (let ((canvas (document.getElementById (string "c")))
 			    (gl (canvas.getContext (string "webgl"))))
 			   (if (not gl)
 			       (logger (string "error: no gl available"))
@@ -355,10 +355,10 @@
 						       #\Space
 						       #\Newline
 						       msg))))))))
-		  (let-g ((video_arrived_p false))
+		  (let ((video_arrived_p false))
 			 ;; https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Animating_textures_in_WebGL
 			 (def setup_video ()
-			   (let-g ((video (get_video))
+			   (let ((video (get_video))
 				   (playing false)
 				   (timeupdate false))
 				  (def check_ready ()
@@ -380,9 +380,9 @@
 							  true)
 				  (return video))))
 		  (def create_texture (gl)
-		    (let-g ((texture (gl.createTexture)))
+		    (let ((texture (gl.createTexture)))
 			   (gl.bindTexture gl.TEXTURE_2D texture)
-			   (let ((level 0)
+			   (let-l ((level 0)
 				 (internal_format gl.RGBA)
 				 (width 1)
 				 (height 1)
@@ -409,7 +409,7 @@
 					     gl.NEAREST)
 			   (return texture)))
 		  (def update_texture (gl texture video)
-		    (let ((level 0)
+		    (let-l ((level 0)
 			  (internal_format gl.RGBA)
 			  (src_format gl.RGBA)
 			  (src_type gl.UNSIGNED_BYTE))
@@ -426,13 +426,13 @@
 							 delay_ms)))))
 
 		  (def recording_start (stream length_ms)
-		    (let-g ((recorder ("new MediaRecorder" stream))
+		    (let ((recorder ("new MediaRecorder" stream))
 			    (data (list)))
 			   (setf recorder.ondataavailable (lambda (event)
 							    (data.push
 							     event.data)))
 			   (recorder.start)
-			   (let-g ((stopped ("new Promise"
+			   (let ((stopped ("new Promise"
 					     (lambda (resolve reject)
 					       (setf recorder.onstop
 						     resolve
@@ -461,7 +461,7 @@
 			(statement (logger (string "WebSocket is supported")))
 			(statement (logger (string "Error: WebSocket is not supported"))
 				   (return false)))
-		    (let-g ((url (+ (string "wss://")
+		    (let ((url (+ (string "wss://")
 				    ;; alternative:
 				    ;; window.location.host
 				    (dot (document.getElementById (string "wss-server-connection"))
@@ -506,7 +506,7 @@
 
 		  (def create_webrtc ( signaling )
 		    (logger (string "create_webrtc .."))
-		    (let-g ((configuration (dict (iceServers (list))))
+		    (let ((configuration (dict (iceServers (list))))
 			    (pc ("new RTCPeerConnection" configuration)))
 			   (setf pc.onicecandidate (lambda (event)
 						     (if event.candidate
@@ -518,7 +518,7 @@
 							  (signaling.send event.candidate))
 							 ;; else all have been sent
 							 )))
-			   (let-g ((chan_send (pc.createDataChannel (string
+			   (let ((chan_send (pc.createDataChannel (string
 								     "datachannel")
 								    (dict (reliable
 									   false)))))
@@ -539,12 +539,12 @@
 		  (def startup ()
 		    (logger (string "startup .."))
 		    
-		    (let-g ((ws (create_websocket))
+		    (let ((ws (create_websocket))
 			    
 			    (gl (get_context))
 			    (video (setup_video)))
 			   
-			   (let-g ((vertex_shader (create_shader gl gl.VERTEX_SHADER
+			   (let ((vertex_shader (create_shader gl gl.VERTEX_SHADER
 								 (dot (document.getElementById
 								       (string
 									"2d-vertex-shader"))
@@ -593,11 +593,11 @@
 				  ,(bind-attribute "attrib_texCoord" :size 2
 						   :stride
 						   4 :offset 0)
-				  (let-g ((is_recording_p false))
-					 (let-g ((then 0)
+				  (let ((is_recording_p false))
+					 (let ((then 0)
 						 (tex (create_texture gl)))
 						(def render (now)
-						  (let-g ((now_seconds (*
+						  (let ((now_seconds (*
 								  now .001))
 						    (delta_time (- now_seconds
 								   then))
@@ -619,7 +619,7 @@
 						    
 						    (update_texture gl tex video)
 						    (gl.bindTexture gl.TEXTURE_2D tex)
-						    (let ((primitive_type gl.TRIANGLE_FAN)
+						    (let-l ((primitive_type gl.TRIANGLE_FAN)
 							  (offset 0)
 							  (count 4)) ;; number of vertices
 						      (gl.drawArrays primitive_type
@@ -651,7 +651,7 @@
 						   (then
 						    (lambda
 							(recorded_chunks)
-						      (let-g
+						      (let
 						       ((recorded_blob
 							 ("new Blob"
 							  recorded_chunks
