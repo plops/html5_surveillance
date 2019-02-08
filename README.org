@@ -210,3 +210,7 @@ Brazil 2016)
 # Authentification
 - https://github.com/slyrus/hunchentoot-auth
 - https://github.com/fukamachi/lack Lack.Middleware.Auth.Basic
+
+
+# Wake lock
+- https://justinribeiro.com/chronicle/2019/01/31/tiny-pwas-and-why-i-keep-building-them/ wakelock api
