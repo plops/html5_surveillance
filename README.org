@@ -211,6 +211,8 @@ Brazil 2016)
 - https://github.com/slyrus/hunchentoot-auth
 - https://github.com/fukamachi/lack Lack.Middleware.Auth.Basic
 
+# Encryption
+- https://www.darkchestnut.com/2019/careful-with-ironclad-multi-threaded-applicaions/ be careful with ironclad in multi-threaded program
 
 # Wake lock
 - https://justinribeiro.com/chronicle/2019/01/31/tiny-pwas-and-why-i-keep-building-them/ wakelock api
