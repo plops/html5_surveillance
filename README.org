@@ -56,16 +56,16 @@ return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStr
 
 - Testing
 
-| name            | purpose                     | comment |   |   |
-|-----------------+-----------------------------+---------+---+---|
-| emacs           | editor                      |         |   |   |
-| cl-py-generator | generate python from sexpr  |         |   |   |
-| openssl         | ssl key generation          |         |   |   |
-| slime           | IDE                         |         |   |   |
-| python          | run tests                   |         |   |   |
-| selenium        | functional tests in browser |         |   |   |
-| xdotool         | allow access to camera      |         |   |   |
-| wmctrl          | allow access to camera      |         |   |   |
+| name            | purpose                     | comment                         |   |   |
+|-----------------+-----------------------------+---------------------------------+---+---|
+| emacs           | editor                      |                                 |   |   |
+| cl-py-generator | generate python from sexpr  |                                 |   |   |
+| openssl         | ssl key generation          |                                 |   |   |
+| slime           | IDE                         |                                 |   |   |
+| python          | run tests                   |                                 |   |   |
+| selenium        | functional tests in browser | perhaps replace with marionette |   |   |
+| xdotool         | allow access to camera      |                                 |   |   |
+| wmctrl          | allow access to camera      |                                 |   |   |
 
 # References
 
@@ -161,8 +161,9 @@ return await canvasToBlob(canvas, constants.IMAGE_TYPE);
 - https://en.wikipedia.org/wiki/Session_Description_Protocol
 - https://tools.ietf.org/html/rfc4566
 
+# Test framework
 - https://selenium-python.readthedocs.io/waits.html
-
+- marionette would probably allow to enable camera in firefox
 
 - https://www.youtube.com/watch?v=uYfXs_6N_Mk 2016 WebRTC Hacks - Chad Hart (webrtcHacks.com) he built the same thing in 2013
 
@@ -206,6 +207,9 @@ Brazil 2016)
 - ICE process figures out how to connect the peers
 - CPaaS provider (communication platform as a service)
 
+# Augmented reality 
+- perhaps as a user interface?
+- https://github.com/jeromeetienne/AR.js
 
 # Authentification
 - https://github.com/slyrus/hunchentoot-auth

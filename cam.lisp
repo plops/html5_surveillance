@@ -245,7 +245,8 @@
 	  `(let ((player (document.getElementById (string "player")))
 		 (log (document.getElementById (string "log"))))
 	     (def logger (message)
-	       #+nil (if (== (string "object") (typeof message))
+	       #-nolog
+	       (if (== (string "object") (typeof message))
 		   (incf log.innerHTML
 			 (+ (? (and JSON
 				    JSON.stringify)
@@ -719,7 +720,7 @@
 					     (or server-name *server-ip*)
 					     *wss-port*)
 			       "accept secure websocket cert here")
-			   
+			   #-nolog
 			   (:div :id "log")
 			   
 			   (:script :id (string "2d-vertex-shader")  :type "notjs"
