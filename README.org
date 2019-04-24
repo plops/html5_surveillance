@@ -220,3 +220,9 @@ Brazil 2016)
 
 # Wake lock
 - https://justinribeiro.com/chronicle/2019/01/31/tiny-pwas-and-why-i-keep-building-them/ wakelock api
+
+
+# References
+
+- low latency webrtc streaming https://antmedia.io/ 
+    - https://news.ycombinator.com/item?id=19733618
