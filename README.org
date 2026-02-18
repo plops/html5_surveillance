@@ -2,6 +2,9 @@
 
 * html5_surveillance
 
+Repurpose your old phones into a professional-grade security network with this Common Lisp-powered video surveillance application. Designed for users who want to use this project to transform a collection of old phones into functional surveillance cameras, the system leverages high-performance metaprogramming to generate a complete client-side stack at server startup.
+
+
 A browser-based video surveillance application built with Common Lisp metaprogramming. It captures camera feeds, processes them via WebGL shaders, streams via WebRTC peer-to-peer, and records processed video. The entire client-side application (JavaScript, GLSL shaders, HTML) is generated from Common Lisp at server startup  .
 
 ** Quick Start
