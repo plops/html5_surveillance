@@ -1,7 +1,68 @@
 
-# Editing parenscript
 
-## Trident mode
+* html5_surveillance
+
+A browser-based video surveillance application built with Common Lisp metaprogramming. It captures camera feeds, processes them via WebGL shaders, streams via WebRTC peer-to-peer, and records processed video. The entire client-side application (JavaScript, GLSL shaders, HTML) is generated from Common Lisp at server startup  .
+
+** Quick Start
+
+1. Install SBCL and Quicklisp.
+2. Load `cam.lisp` in your REPL.
+3. The system auto-generates SSL certs, starts HTTPS on port 7777 and WebSocket on port 7778, and detects the server IP.
+4. Open `https://<server-ip>:7777/`, accept the self-signed cert, then visit `wss://<server-ip>:7778/` to accept the WebSocket cert.
+5. Grant camera permissions; video renders with WebGL processing; recording starts after 5 seconds; click Download to save the video .
+
+** Architecture
+
+- *Common Lisp generators* produce JavaScript, GLSL, and Python test scripts from S-expressions.
+- *Server*: HTTPS (7777) + secure WebSocket (7778) with Clack and websocket-driver.
+- *Client*: Camera access via getUserMedia, WebGL rendering, WebSocket signaling, WebRTC peer connections, MediaRecorder recording  .
+
+** Core Capabilities
+
+- Camera enumeration and stream access
+- GPU-accelerated video processing (WebGL, 60fps)
+- Real-time P2P streaming (WebRTC)
+- WebSocket signaling for SDP exchange
+- Video recording of processed canvas
+- SSL/TLS (self-signed or Let's Encrypt)
+- Automated Selenium-based tests  .
+
+** Dependencies
+
+*** Production (Common Lisp)
+- sbcl, quicklisp
+- cl-js-generator, js-beautify
+- cl-cpp-generator, clang-format
+- clack, websocket-driver, local-time
+- cl-who, cl-fad
+- letsencrypt (certs) or self-signed
+- /usr/bin/hostname
+
+*** Production (Browser)
+- HTML5: video, canvas
+- JavaScript: WebGL1
+- WebSockets (signaling)
+- WebRTC (camera, P2P)
+
+*** Testing
+- emacs, slime, cl-py-generator
+- python, selenium
+- openssl, xdotool, wmctrl.
+
+** Notes
+
+- For production, replace self-signed certs with Let's Encrypt paths in `cam.lisp` .
+- Mobile Firefox on Android allows camera access over HTTP; Chrome requires HTTPS  .
+- WebRTC data channels and ICE/STUN/TURN are configurable; see references in README.org .
+
+
+
+
+
+* Editing parenscript
+
+** Trident mode
 - in conjunction with skewer-mode can execute parenscript
   in the browser. it does not support completion. it is on melpa
 - if we don't use the parenscript package, macros are not expanded:
@@ -22,11 +83,11 @@ return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStr
 ```
 
 
-## slime-proxy
+** slime-proxy
 - seems to do completion but needs parenscript patches and is not on
   melpa. i haven't tried it
 
-# Dependencies
+* Dependencies
 
 - Production
 
@@ -67,7 +128,7 @@ return at(at(at(navigator, mediaDevices, getUserMedia)(constraints), then(gotStr
 | xdotool         | allow access to camera      |                                 |   |   |
 | wmctrl          | allow access to camera      |                                 |   |   |
 
-# References
+* References
 
 - https://whatwebcando.today/camera-microphone.html
 - https://www.html5rocks.com/en/tutorials/getusermedia/intro/
